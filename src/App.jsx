@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import Layout from './components/layout/Layout'
 import Dashboard     from './pages/Dashboard'
 import Contacts      from './pages/Contacts'
@@ -10,9 +10,15 @@ import Timesheets    from './pages/Timesheets'
 import Payroll       from './pages/Payroll'
 import { Leads, Deals, Markets, Settings, Invoices } from './pages/Placeholders'
 
-export default function App() {
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+
+function ClerkWithRouter() {
+  const navigate = useNavigate()
   return (
-    <BrowserRouter>
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      navigate={(to) => navigate(to)}
+    >
       <SignedOut>
         <RedirectToSignIn />
       </SignedOut>
@@ -34,6 +40,14 @@ export default function App() {
           </Routes>
         </Layout>
       </SignedIn>
+    </ClerkProvider>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <ClerkWithRouter />
     </BrowserRouter>
   )
 }
