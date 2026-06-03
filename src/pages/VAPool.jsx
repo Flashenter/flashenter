@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { FileText, Play, VideoOff, UserPlus, Eye, Star, Plus, Upload, X } from 'lucide-react'
 import { MetricCard, Card, Tag, Avatar, Button, PageHeader } from '../components/ui'
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from '../lib/supabase'
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const filters = ['All VAs', 'Available', 'Assigned', '🇵🇭 Philippines', '🇿🇦 South Africa', '🇨🇴 Colombia', '🇵🇦 Panama', '🇩🇴 Dom. Republic', 'Has video', 'Full-time']
