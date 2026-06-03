@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
-import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { SignIn, SignedIn, SignedOut } from '@clerk/clerk-react'
 import Layout from './components/layout/Layout'
 import Dashboard     from './pages/Dashboard'
 import Contacts      from './pages/Contacts'
@@ -10,17 +10,25 @@ import Timesheets    from './pages/Timesheets'
 import Payroll       from './pages/Payroll'
 import { Leads, Deals, Markets, Settings, Invoices } from './pages/Placeholders'
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
-
-function ClerkWithRouter() {
-  const navigate = useNavigate()
+export default function App() {
   return (
-    <ClerkProvider
-      publishableKey={PUBLISHABLE_KEY}
-      navigate={(to) => navigate(to)}
-    >
+    <BrowserRouter>
       <SignedOut>
-        <RedirectToSignIn />
+        <div style={{
+          minHeight: '100vh', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', background: '#F5F4F1',
+          fontFamily: 'var(--font-sans)'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>
+              <span style={{ color: '#534AB7' }}>Flash</span>enter
+            </div>
+            <div style={{ fontSize: 13, color: '#888780', marginBottom: 32 }}>
+              One platform · One team · One price
+            </div>
+            <SignIn />
+          </div>
+        </div>
       </SignedOut>
       <SignedIn>
         <Layout>
@@ -40,14 +48,6 @@ function ClerkWithRouter() {
           </Routes>
         </Layout>
       </SignedIn>
-    </ClerkProvider>
-  )
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <ClerkWithRouter />
     </BrowserRouter>
   )
 }
