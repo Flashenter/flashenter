@@ -27,7 +27,7 @@ export default function Onboarding() {
   }
 
   async function advanceStep(ob) {
-    const nextStep = (ob.current_step || 0) + 1
+    const nextStep = (onboardings.find(o => o.id === ob.id)?..current_step || 0) + 1
     await supabase.from('onboardings').update({ current_step: nextStep, status: nextStep >= 5 ? 'complete' : 'in-progress' }).eq('id', ob.id)
     fetchOnboardings()
   }
