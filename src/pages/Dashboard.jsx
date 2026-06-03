@@ -5,6 +5,7 @@ import { contacts, timesheets, reminders } from '../data'
 const dotColor = { overdue: 'var(--red-400)', today: 'var(--amber-400)', upcoming: 'var(--purple-600)', done: '#B4B2A9' }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const hotReminders = reminders.filter(r => !r.done).slice(0, 4)
   const activeDeals = contacts.filter(c => c.status !== 'new').slice(0, 4)
 
@@ -14,7 +15,7 @@ export default function Dashboard() {
         title="Good morning, James"
         subtitle="Tuesday, Jun 3 · 7 active markets · Payroll due Wednesday 5:00pm"
       >
-        <Button variant="primary" icon={ArrowUpRight}>New client</Button>
+        <Button variant="primary" icon={ArrowUpRight} onClick={() => navigate('/contacts')}>New client</Button>
       </PageHeader>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 16 }}
