@@ -109,7 +109,11 @@ export default function Onboarding() {
                       </div>
                     ))}
                   </div>
-                  {ob.status === 'action-needed' && (
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+    <button onClick={() => advanceStep(ob)} style={{ flex: 1, padding: '8px', borderRadius: 10, background: 'var(--purple-600)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Advance to next step</button>
+    <button onClick={() => markActionNeeded(ob.id)} style={{ padding: '8px 16px', borderRadius: 10, background: 'var(--amber-50)', color: 'var(--amber-600)', border: '0.5px solid var(--amber-200)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Flag</button>
+  </div>
+  {ob.status === 'action-needed' && (
                     <button style={{ width: '100%', marginTop: 12, padding: '10px', borderRadius: 10, background: 'var(--purple-600)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <Calendar size={14} /> Confirm final interview
                     </button>
