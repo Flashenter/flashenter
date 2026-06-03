@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Check, ChevronDown, ChevronUp, Calendar, Plus, FileText } from 'lucide-react'
-import { Card, Tag, Avatar, Button, PageHeader } from '../components/ui'
+import { Check, ChevronDown, ChevronUp, Plus } from 'lucide-react'
+import { Avatar, Button, PageHeader } from '../components/ui'
 import { supabase } from '../lib/supabase'
 
 const stepLabels = ['Application received', 'Initial interview', 'Final interview', 'Docs & contracts', 'Client intro', 'First day']
@@ -10,7 +10,11 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState({})
   const [showAdd, setShowAdd] = useState(false)
-  const [newOB, setNewOB] = useState({ va_name: '', client_name: '', country: '', role: '', type: 'Full-time', start_date: '', rate: '', admin_name: '', current_step: 0, status: 'in-progress', contract: 'Not sent', bank: 'Pending' })
+  const [newOB, setNewOB] = useState({
+    va_name: '', client_name: '', country: '', role: '',
+    type: 'Full-time', start_date: '', rate: '', admin_name: '',
+    current_step: 0, status: 'in-progress', contract: 'Not sent', bank: 'Pending'
+  })
 
   useEffect(() => { fetchOnboardings() }, [])
 
@@ -31,11 +35,12 @@ export default function Onboarding() {
 
   async function advanceStep(id, currentStep) {
     if (currentStep >= 5) return
-    await supabase.from('onboardings').update({ current_step: currentStep + 1 }).eq('id', id)
-    fetchOnboardings()
+    const { error } = await supabase.from('onboardings').update({ current_step: currentStep + 1 }).eq('id', id)
+    if (error) alert('Error: ' + error.message)
+    else fetchOnboardings()
   }
 
-  const toggleExpand = (id) => setExpanded(e => ({ ...e, [id]: !e[id] }))
+  const toggleExpand = (id) => setExpanded(e => ({ ...e, [id]: e[id] === false ? true : false }))
 
   return (
     <div>
@@ -90,9 +95,11 @@ export default function Onboarding() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {onboardings.map((ob, i) => {
             const isOpen = expanded[ob.id] !== false
+            const step = Number(ob.current_step) || 0
             return (
               <div key={ob.id} style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: isOpen ? '0.5px solid rgba(0,0,0,0.06)' : 'none', cursor: 'pointer' }} onClick={() => toggleExpand(ob.id)}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: isOpen ? '0.5px solid rgba(0,0,0,0.06)' : 'none', cursor: 'pointer' }}
+                  onClick={() => toggleExpand(ob.id)}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Avatar initials={ob.va_initials || ob.va_name?.slice(0,2).toUpperCase()} size={38} colorIndex={i % 6} />
                     <div>
@@ -100,38 +107,56 @@ export default function Onboarding() {
                         {ob.va_name}
                         <span style={{ fontSize: 11, color: '#888780', fontWeight: 400 }}> → {ob.client_name}</span>
                       </div>
-                      <div style={{ fontSize: 11, color: '#888780', marginTop: 2 }}>{ob.country} · {ob.role}</div>
+                      <div style={{ fontSize: 11, color: '#888780', marginTop: 2 }}>{ob.country} · {ob.role} · Step {step + 1} of 6</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: ob.status === 'in-progress' ? 'var(--amber-50)' : 'var(--red-50)', color: ob.status === 'in-progress' ? 'var(--amber-600)' : 'var(--red-600)' }}>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: ob.status === 'in-progress' ? '#FAEEDA' : '#FCEBEB', color: ob.status === 'in-progress' ? '#854F0B' : '#791F1F' }}>
                       {ob.status === 'in-progress' ? 'In progress' : 'Action needed'}
-                    </div>
+                    </span>
                     {isOpen ? <ChevronUp size={14} color="#888780" /> : <ChevronDown size={14} color="#888780" />}
                   </div>
                 </div>
 
                 {isOpen && (
                   <div style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 4, marginBottom: 14 }}>
-                      {stepLabels.map((label, idx) => {
-                        const done = idx < ob.current_step
-                        const active = idx === ob.current_step
-                        return (
-                          <div key={label} style={{ textAlign: 'center' }}>
-                            <div style={{ width: 24, height: 24, borderRadius: '50%', margin: '0 auto 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, background: done ? '#534AB7' : active ? '#EEEDFE' : '#F5F4F1', border: active ? '2px solid #534AB7' : '0.5px solid rgba(0,0,0,0.08)', color: done ? '#fff' : active ? '#534AB7' : '#B4B2A9' }}>
-                              {done ? <Check size={10} /> : idx + 1}
+
+                    {/* Progress bar */}
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#1a1a18' }}>Progress</span>
+                        <span style={{ fontSize: 11, color: '#888780' }}>{step} of 6 steps complete</span>
+                      </div>
+                      <div style={{ height: 6, background: '#F5F4F1', borderRadius: 6, overflow: 'hidden', marginBottom: 10 }}>
+                        <div style={{ height: '100%', width: `${(step / 6) * 100}%`, background: '#534AB7', borderRadius: 6, transition: 'width 0.3s ease' }} />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 4 }}>
+                        {stepLabels.map((label, idx) => {
+                          const done = idx < step
+                          const active = idx === step
+                          return (
+                            <div key={label} style={{ textAlign: 'center' }}>
+                              <div style={{
+                                width: 28, height: 28, borderRadius: '50%', margin: '0 auto 5px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11,
+                                background: done ? '#534AB7' : active ? '#EEEDFE' : '#F5F4F1',
+                                border: active ? '2px solid #534AB7' : done ? 'none' : '0.5px solid rgba(0,0,0,0.08)',
+                                color: done ? '#fff' : active ? '#534AB7' : '#B4B2A9',
+                              }}>
+                                {done ? <Check size={12} /> : idx + 1}
+                              </div>
+                              <div style={{ fontSize: 9, color: active ? '#534AB7' : done ? '#1a1a18' : '#B4B2A9', fontWeight: active ? 600 : 400, lineHeight: 1.3 }}>{label}</div>
                             </div>
-                            <div style={{ fontSize: 9, color: active ? '#534AB7' : done ? '#1a1a18' : '#B4B2A9', fontWeight: active ? 600 : 400, lineHeight: 1.3 }}>{label}</div>
-                          </div>
-                        )
-                      })}
+                          )
+                        })}
+                      </div>
                     </div>
 
+                    {/* Info grid */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 12 }}>
                       {[
                         { label: 'Client', val: ob.client_name },
-                        { label: 'Role', val: ob.role + ' · ' + ob.type },
+                        { label: 'Role', val: ob.role + (ob.type ? ' · ' + ob.type : '') },
                         { label: 'Start date', val: ob.start_date || 'TBD' },
                         { label: 'Pay rate', val: ob.rate },
                         { label: 'Contract', val: ob.contract, color: ob.contract?.includes('✓') ? 'var(--green-600)' : 'var(--amber-400)' },
@@ -146,17 +171,17 @@ export default function Onboarding() {
 
                     {ob.admin_name && (
                       <div style={{ fontSize: 12, color: '#888780', marginBottom: 10 }}>
-                        Assigned admin: <span style={{ fontWeight: 600, color: '#1a1a18' }}>{ob.admin_name}</span>
+                        Assigned admin: <strong style={{ color: '#1a1a18' }}>{ob.admin_name}</strong>
                       </div>
                     )}
 
-                    {ob.current_step < 5 && (
-                      <button onClick={() => advanceStep(ob.id, ob.current_step)} style={{ width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: '#534AB7', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                        Complete step {ob.current_step + 1}: {stepLabels[ob.current_step]} →
+                    {step < 6 ? (
+                      <button onClick={() => advanceStep(ob.id, step)}
+                        style={{ width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: '#534AB7', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                        ✓ Complete: {stepLabels[step]} → Move to next step
                       </button>
-                    )}
-                    {ob.current_step === 5 && (
-                      <div style={{ textAlign: 'center', padding: '10px', background: 'var(--green-50)', borderRadius: 10, color: 'var(--green-600)', fontWeight: 600, fontSize: 12 }}>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '10px', background: '#EAF3DE', borderRadius: 10, color: 'var(--green-600)', fontWeight: 600, fontSize: 12 }}>
                         ✅ Onboarding complete!
                       </div>
                     )}
