@@ -7,7 +7,7 @@ import {
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: Users, label: 'Contacts', path: '/contacts' },
+  { icon: Users, label: 'Clients', path: '/contacts' },
   { icon: Star, label: 'Leads', path: '/leads' },
   { icon: Briefcase, label: 'Deals', path: '/deals' },
   null,

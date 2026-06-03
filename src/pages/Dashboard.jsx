@@ -14,7 +14,7 @@ export default function Dashboard() {
         title="Good morning, James"
         subtitle="Tuesday, Jun 3 · 7 active markets · Payroll due Wednesday 5:00pm"
       >
-        <Button variant="primary" icon={ArrowUpRight}>New deal</Button>
+        <Button variant="primary" icon={ArrowUpRight}>New client</Button>
       </PageHeader>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 16 }}
