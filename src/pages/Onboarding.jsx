@@ -114,3 +114,22 @@ export default function Onboarding() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 12 }}>
                     {interviews.filter(i => i.done && i.notes).map((int, i) => (
+                        <div key={i} style={{ padding: '9px 12px', borderRadius: 10, background: '#F5F4F1', borderLeft: `3px solid ${i === 0 ? 'var(--purple-600)' : 'var(--red-400)'}` }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: '#1a1a18', marginBottom: 4 }}>{int.label} · {ob.admin_name}</div>
+                          <div style={{ fontSize: 12, color: '#444441', lineHeight: 1.5 }}>{int.notes}</div>
+                        </div>
+                      ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => advanceStep(ob.id, ob.current_step)} style={{ flex: 1, padding: '8px', borderRadius: 10, background: 'var(--purple-600)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Advance to next step</button>
+                    <button onClick={() => markActionNeeded(ob.id)} style={{ padding: '8px 16px', borderRadius: 10, background: 'var(--amber-50)', color: 'var(--amber-600)', border: '0.5px solid var(--amber-200)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Flag</button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
