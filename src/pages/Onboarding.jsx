@@ -112,7 +112,7 @@ export default function Onboarding() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: ob.status === 'in-progress' ? '#FAEEDA' : '#FCEBEB', color: ob.status === 'in-progress' ? '#854F0B' : '#791F1F' }}>
-                      {ob.status === 'in-progress' ? 'In progress' : 'Action needed'}
+                      {ob.status === 'in-progress' ? 'In progress' : 'in-progress'}
                     </span>
                     {isOpen ? <ChevronUp size={14} color="#888780" /> : <ChevronDown size={14} color="#888780" />}
                   </div>
