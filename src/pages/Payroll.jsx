@@ -24,12 +24,33 @@ const statusColors = { paid: 'green', pending: 'amber', processing: 'purple' }
 
 export default function Payroll() {
   const [timesheets, setTimesheets] = useState([])
+  const [running, setRunning] = useState(false)  // NEW: tracks if payroll is being processed
 
   useEffect(() => { fetchTimesheets() }, [])
 
   async function fetchTimesheets() {
     const { data } = await supabase.from('timesheets').select('*').order('created_at', { ascending: false })
     if (data) setTimesheets(data)
+  }
+
+  // NEW: This function runs when you click the button
+  // It finds all approved timesheets and marks them as 'paid' in Supabase
+  async function runPayroll() {
+    setRunning(true) // disables the button so you can't click twice
+
+    const { error } = await supabase
+      .from('timesheets')
+      .update({ status: 'paid' })       // change status to 'paid'
+      .eq('status', 'approved')         // but only for approved timesheets
+
+    if (error) {
+      alert('Something went wrong: ' + error.message)
+    } else {
+      alert('Payroll approved! Workers will be paid by Friday Jun 6.')
+      fetchTimesheets() // refresh the list so the screen updates
+    }
+
+    setRunning(false) // re-enable the button
   }
 
   const ready   = timesheets.filter(r => r.status === 'approved').length
@@ -123,13 +144,20 @@ export default function Payroll() {
             </div>
           </Card>
 
-          <button style={{
-            width: '100%', padding: '13px', borderRadius: 14, border: 'none',
-            background: 'var(--purple-600)', color: '#fff', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', fontFamily: 'var(--font-sans)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          }}>
-            <Play size={14} /> Approve and run payroll for {ready} ready workers
+          {/* FIXED: added onClick={runPayroll} and disabled while running */}
+          <button
+            onClick={runPayroll}
+            disabled={running || ready === 0}
+            style={{
+              width: '100%', padding: '13px', borderRadius: 14, border: 'none',
+              background: running || ready === 0 ? '#ccc' : 'var(--purple-600)',
+              color: '#fff', fontSize: 13, fontWeight: 600,
+              cursor: running || ready === 0 ? 'not-allowed' : 'pointer',
+              fontFamily: 'var(--font-sans)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}>
+            <Play size={14} />
+            {running ? 'Processing...' : `Approve and run payroll for ${ready} ready workers`}
           </button>
           <div style={{ fontSize: 11, color: '#888780', textAlign: 'center', marginTop: -8 }}>
             Funds arrive Friday Jun 6 · Invoices auto-sent to clients
