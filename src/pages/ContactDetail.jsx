@@ -1,107 +1,162 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Mail, Phone, Globe, Clock, Users, DollarSign, Bell, Check, Send, Phone as PhoneIcon, FileText, UserPlus } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, Globe, Clock, Users, DollarSign, Bell, Check, Send, Phone as PhoneIcon, FileText, UserPlus, Plus, Trash2 } from 'lucide-react'
 import { Card, Tag, Avatar, Button, SectionTitle } from '../components/ui'
-import { contacts, reminders, notes } from '../data'
+import { supabase } from '../lib/supabase'
 
 const stages = ['New inquiry', 'First contact', 'Qualified', 'Proposal sent', 'Negotiation', 'Closed — client']
 
-const typeColors = { 'Call': 'blue', 'Email': 'purple', 'Follow-up': 'amber', 'Meeting': 'teal' }
 const urgencyStyle = {
-  overdue:  { bg: 'var(--red-50)',   border: 'var(--red-400)',   titleColor: '#791F1F', timeColor: '#A32D2D' },
+  overdue:  { bg: 'var(--red-50)',   border: '#F09595',          titleColor: '#791F1F', timeColor: '#A32D2D' },
   today:    { bg: 'var(--amber-50)', border: '#EF9F27',          titleColor: '#633806', timeColor: '#854F0B' },
   upcoming: { bg: '#fff',            border: 'rgba(0,0,0,0.08)', titleColor: '#1a1a18', timeColor: '#888780' },
   done:     { bg: '#F5F4F1',         border: 'rgba(0,0,0,0.06)', titleColor: '#1a1a18', timeColor: '#B4B2A9' },
 }
 
-const timelineItems = [
-  { icon: Send,     bg: 'var(--amber-50)',   color: 'var(--amber-600)', title: 'Proposal sent', sub: '3 VA package · $1,200/mo · PDF emailed', time: 'Jun 1, 2026 · 11:45am' },
-  { icon: PhoneIcon,bg: '#E6F1FB',           color: '#185FA5',          title: 'Call logged — 28 min', sub: 'Budget confirmed, roles discussed, proposal agreed', time: 'Jun 1, 2026 · 11:04am' },
-  { icon: FileText, bg: 'var(--purple-50)',  color: 'var(--purple-600)',title: 'Qualification note added', sub: 'Confirmed need, budget, and decision maker', time: 'May 20, 2026 · 3:14pm' },
-  { icon: PhoneIcon,bg: '#E6F1FB',           color: '#185FA5',          title: 'First call — 15 min', sub: 'Warm intro via Carlos Peña · Interested in 1–3 VAs', time: 'May 16, 2026 · 10:05am' },
-  { icon: UserPlus, bg: 'var(--teal-50)',    color: 'var(--teal-600)',  title: 'Contact created', sub: 'Referred by Carlos Peña · Nexora LLC', time: 'May 14, 2026 · 8:31am' },
-]
-
 export default function ContactDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const contact = contacts.find(c => c.id === Number(id)) || contacts[0]
+  const [contact, setContact] = useState(null)
+  const [notes, setNotes] = useState([])
+  const [reminders, setReminders] = useState([])
   const [noteText, setNoteText] = useState('')
-  const [localReminders, setLocalReminders] = useState(reminders)
+  const [noteType, setNoteType] = useState('Note')
+  const [showReminder, setShowReminder] = useState(false)
+  const [newReminder, setNewReminder] = useState({ title: '', sub: '', when_text: '', type: 'Follow-up', urgency: 'upcoming' })
+  const [loading, setLoading] = useState(true)
 
-  const currentStageIdx = stages.findIndex(s => s.toLowerCase().includes(contact.stage.toLowerCase().split(' ')[0])) || 3
+  useEffect(() => {
+    fetchAll()
+  }, [id])
 
-  const toggleReminder = (rid) => {
-    setLocalReminders(r => r.map(rem => rem.id === rid ? { ...rem, done: !rem.done } : rem))
+  async function fetchAll() {
+    setLoading(true)
+    const [{ data: c }, { data: n }, { data: r }] = await Promise.all([
+      supabase.from('contacts').select('*').eq('id', id).single(),
+      supabase.from('notes').select('*').eq('contact_id', id).order('created_at', { ascending: false }),
+      supabase.from('reminders').select('*').eq('contact_id', id).order('created_at', { ascending: false }),
+    ])
+    setContact(c)
+    setNotes(n || [])
+    setReminders(r || [])
+    setLoading(false)
   }
+
+  async function saveNote() {
+    if (!noteText.trim()) return
+    await supabase.from('notes').insert([{ contact_id: id, author: 'Admin', text: noteText, type: noteType }])
+    setNoteText('')
+    fetchAll()
+  }
+
+  async function saveReminder() {
+    if (!newReminder.title) return alert('Please enter a title')
+    await supabase.from('reminders').insert([{ ...newReminder, contact_id: id }])
+    setShowReminder(false)
+    setNewReminder({ title: '', sub: '', when_text: '', type: 'Follow-up', urgency: 'upcoming' })
+    fetchAll()
+  }
+
+  async function toggleReminder(rid, done) {
+    await supabase.from('reminders').update({ done: !done }).eq('id', rid)
+    fetchAll()
+  }
+
+  async function deleteNote(nid) {
+    await supabase.from('notes').delete().eq('id', nid)
+    fetchAll()
+  }
+
+  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: '#888780' }}>Loading...</div>
+  if (!contact) return <div style={{ textAlign: 'center', padding: 60 }}>Contact not found</div>
+
+  const currentStageIdx = stages.findIndex(s => s === contact.stage) || 0
 
   return (
     <div className="animate-fade-in">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <button onClick={() => navigate('/contacts')} style={{
-            display: 'flex', alignItems: 'center', gap: 5, fontSize: 12,
-            color: '#888780', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 6,
-            fontFamily: 'var(--font-sans)',
-          }}>
+          <button onClick={() => navigate('/contacts')} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#888780', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 6, fontFamily: 'var(--font-sans)' }}>
             <ArrowLeft size={13} /> Back to contacts
           </button>
           <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.3px' }}>{contact.name}</h1>
-          <p style={{ fontSize: 12, color: '#888780', marginTop: 3 }}>{contact.title} · {contact.company} · {contact.flag} {contact.country}</p>
+          <p style={{ fontSize: 12, color: '#888780', marginTop: 3 }}>{contact.title} · {contact.company} · {contact.country}</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button icon={Mail}>Email</Button>
           <Button icon={Phone}>Call</Button>
-          <Button variant="primary" icon={Bell}>Add reminder</Button>
+          <Button variant="primary" icon={Bell} onClick={() => setShowReminder(true)}>Add reminder</Button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 14 }}>
+      {showReminder && (
+        <div style={{ background: '#fff', border: '1.5px solid #AFA9EC', borderRadius: 14, padding: 16, marginBottom: 14 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>New reminder</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, marginBottom: 12 }}>
+            {[
+              { key: 'title', label: 'Title *' },
+              { key: 'sub', label: 'Details' },
+              { key: 'when_text', label: 'When (e.g. Today 4pm)' },
+            ].map(f => (
+              <div key={f.key}>
+                <div style={{ fontSize: 11, color: '#888780', marginBottom: 3 }}>{f.label}</div>
+                <input value={newReminder[f.key]} onChange={e => setNewReminder(p => ({ ...p, [f.key]: e.target.value }))}
+                  style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 12, fontFamily: 'var(--font-sans)', outline: 'none' }} />
+              </div>
+            ))}
+            <div>
+              <div style={{ fontSize: 11, color: '#888780', marginBottom: 3 }}>Urgency</div>
+              <select value={newReminder.urgency} onChange={e => setNewReminder(p => ({ ...p, urgency: e.target.value }))}
+                style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 12, fontFamily: 'var(--font-sans)' }}>
+                <option value="overdue">Overdue</option>
+                <option value="today">Today</option>
+                <option value="upcoming">Upcoming</option>
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: '#888780', marginBottom: 3 }}>Type</div>
+              <select value={newReminder.type} onChange={e => setNewReminder(p => ({ ...p, type: e.target.value }))}
+                style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 12, fontFamily: 'var(--font-sans)' }}>
+                <option>Follow-up</option>
+                <option>Call</option>
+                <option>Email</option>
+                <option>Meeting</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={saveReminder} style={{ background: '#534AB7', color: '#fff', border: 'none', borderRadius: 40, padding: '8px 18px', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Save reminder</button>
+            <button onClick={() => setShowReminder(false)} style={{ background: '#F5F4F1', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 40, padding: '8px 18px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+          </div>
+        </div>
+      )}
 
-        {/* Left panel */}
+      <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 14 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Card style={{ textAlign: 'center', padding: '16px' }}>
-            <Avatar initials={contact.initials} size={52} colorIndex={contact.colorIndex} />
-            <div style={{ margin: '0 auto', width: 52 }}></div>
-            <div style={{ fontSize: 15, fontWeight: 600, marginTop: 10 }}>{contact.name}</div>
+          <Card style={{ textAlign: 'center', padding: 16 }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#EEEDFE', color: '#534AB7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600, margin: '0 auto 10px' }}>
+              {contact.name?.slice(0,2).toUpperCase()}
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>{contact.name}</div>
             <div style={{ fontSize: 12, color: '#888780', marginTop: 2 }}>{contact.title} · {contact.company}</div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginTop: 8, flexWrap: 'wrap' }}>
-              <Tag color={contact.status === 'hot' ? 'red' : contact.status === 'client' ? 'green' : 'amber'}>
-                {contact.status === 'hot' ? 'Hot lead' : contact.status === 'client' ? 'Active client' : 'Warm lead'}
-              </Tag>
-              <Tag color="teal">{contact.flag} {contact.country.split(' ')[0]}</Tag>
+              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: contact.status === 'hot' ? 'var(--red-50)' : contact.status === 'client' ? 'var(--green-50)' : '#EEEDFE', color: contact.status === 'hot' ? 'var(--red-600)' : contact.status === 'client' ? 'var(--green-600)' : '#534AB7' }}>
+                {contact.status}
+              </span>
             </div>
           </Card>
 
           <Card>
             <div style={{ fontSize: 10, color: '#888780', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 }}>Contact info</div>
             {[
-              { Icon: Mail,  val: contact.email },
+              { Icon: Mail, val: contact.email },
               { Icon: Phone, val: contact.phone },
-              { Icon: Globe, val: contact.company.toLowerCase().replace(' ','')+'.com' },
-              { Icon: Clock, val: contact.timezone, sub: 'Current time: 2:14pm' },
-            ].map(({ Icon, val, sub }) => (
+              { Icon: Globe, val: contact.country },
+              { Icon: Users, val: contact.vas ? contact.vas + ' VAs · ' + contact.budget : contact.budget },
+            ].filter(r => r.val).map(({ Icon, val }) => (
               <div key={val} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <Icon size={13} color="#B4B2A9" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div>
-                  <div style={{ fontSize: 12, color: '#1a1a18' }}>{val}</div>
-                  {sub && <div style={{ fontSize: 10, color: '#888780' }}>{sub}</div>}
-                </div>
-              </div>
-            ))}
-
-            <div style={{ height: 0.5, background: 'rgba(0,0,0,0.06)', margin: '10px 0' }} />
-            <div style={{ fontSize: 10, color: '#888780', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 }}>Deal info</div>
-            {[
-              { Icon: Users,      val: `${contact.vas} VAs requested`, sub: 'Customer support roles' },
-              { Icon: DollarSign, val: contact.budget, sub: 'Budget confirmed' },
-            ].map(({ Icon, val, sub }) => (
-              <div key={val} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <Icon size={13} color="#B4B2A9" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div>
-                  <div style={{ fontSize: 12, color: '#1a1a18' }}>{val}</div>
-                  <div style={{ fontSize: 10, color: '#888780' }}>{sub}</div>
-                </div>
+                <div style={{ fontSize: 12, color: '#1a1a18' }}>{val}</div>
               </div>
             ))}
           </Card>
@@ -110,55 +165,34 @@ export default function ContactDetail() {
             <div style={{ fontSize: 10, color: '#888780', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 }}>Deal stage</div>
             {stages.map((s, i) => (
               <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', position: 'relative' }}>
-                {i < stages.length - 1 && (
-                  <div style={{ position: 'absolute', left: 9, top: 24, width: 1.5, height: 14, background: 'rgba(0,0,0,0.08)' }} />
-                )}
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', flexShrink: 0, zIndex: 1,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9,
-                  background: i < currentStageIdx ? 'var(--purple-600)' : i === currentStageIdx ? 'var(--purple-50)' : '#F5F4F1',
-                  border: i === currentStageIdx ? '2px solid var(--purple-600)' : '0.5px solid rgba(0,0,0,0.1)',
-                  color: i < currentStageIdx ? '#fff' : i === currentStageIdx ? 'var(--purple-600)' : '#B4B2A9',
-                }}>
+                {i < stages.length - 1 && <div style={{ position: 'absolute', left: 9, top: 24, width: 1.5, height: 14, background: 'rgba(0,0,0,0.08)' }} />}
+                <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, background: i < currentStageIdx ? '#534AB7' : i === currentStageIdx ? '#EEEDFE' : '#F5F4F1', border: i === currentStageIdx ? '2px solid #534AB7' : '0.5px solid rgba(0,0,0,0.1)', color: i < currentStageIdx ? '#fff' : i === currentStageIdx ? '#534AB7' : '#B4B2A9' }}>
                   {i < currentStageIdx ? <Check size={9} /> : i + 1}
                 </div>
-                <span style={{
-                  fontSize: 12,
-                  color: i === currentStageIdx ? 'var(--purple-600)' : i < currentStageIdx ? '#1a1a18' : '#B4B2A9',
-                  fontWeight: i === currentStageIdx ? 600 : 400,
-                }}>{s}</span>
+                <span style={{ fontSize: 12, color: i === currentStageIdx ? '#534AB7' : i < currentStageIdx ? '#1a1a18' : '#B4B2A9', fontWeight: i === currentStageIdx ? 600 : 400 }}>{s}</span>
               </div>
             ))}
           </Card>
         </div>
 
-        {/* Right panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Card>
-            <SectionTitle action="+ Add">Reminders</SectionTitle>
+            <SectionTitle>Reminders</SectionTitle>
+            {reminders.length === 0 && <div style={{ fontSize: 12, color: '#888780', padding: '8px 0' }}>No reminders yet — click "Add reminder" above</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {localReminders.map(r => {
-                const us = urgencyStyle[r.done ? 'done' : r.urgency]
+              {reminders.map(r => {
+                const us = urgencyStyle[r.done ? 'done' : r.urgency] || urgencyStyle.upcoming
                 return (
-                  <div key={r.id} style={{
-                    display: 'flex', alignItems: 'flex-start', gap: 8, padding: '9px 10px',
-                    borderRadius: 10, background: us.bg, border: `0.5px solid ${us.border}`,
-                    opacity: r.done ? 0.5 : 1,
-                  }}>
-                    <button onClick={() => toggleReminder(r.id)} style={{
-                      width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1,
-                      border: `0.5px solid ${r.done ? 'var(--green-400)' : 'rgba(0,0,0,0.15)'}`,
-                      background: r.done ? 'var(--green-400)' : '#fff',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                    }}>
+                  <div key={r.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '9px 10px', borderRadius: 10, background: us.bg, border: `0.5px solid ${us.border}`, opacity: r.done ? 0.6 : 1 }}>
+                    <button onClick={() => toggleReminder(r.id, r.done)} style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1, border: `0.5px solid ${r.done ? 'var(--green-400)' : 'rgba(0,0,0,0.15)'}`, background: r.done ? 'var(--green-400)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                       {r.done && <Check size={10} color="#fff" />}
                     </button>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 500, color: us.titleColor }}>{r.title}</div>
-                      <div style={{ fontSize: 11, color: '#888780', marginTop: 2 }}>{r.sub}</div>
-                      <div style={{ fontSize: 10, marginTop: 3, color: us.timeColor }}>{r.when}</div>
+                      {r.sub && <div style={{ fontSize: 11, color: '#888780', marginTop: 2 }}>{r.sub}</div>}
+                      {r.when_text && <div style={{ fontSize: 10, marginTop: 3, color: us.timeColor }}>{r.when_text}</div>}
                     </div>
-                    <Tag color={typeColors[r.type] || 'gray'}>{r.type}</Tag>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: '#EEEDFE', color: '#534AB7' }}>{r.type}</span>
                   </div>
                 )
               })}
@@ -166,55 +200,36 @@ export default function ContactDetail() {
           </Card>
 
           <Card>
-            <SectionTitle action="+ Add note">Notes</SectionTitle>
+            <SectionTitle>Notes</SectionTitle>
             <div style={{ display: 'flex', gap: 8, marginBottom: 10, background: '#F5F4F1', borderRadius: 10, padding: 10 }}>
-              <textarea
-                value={noteText}
-                onChange={e => setNoteText(e.target.value)}
-                placeholder="Add a note, call summary, or update..."
-                rows={2}
-                style={{
-                  flex: 1, border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 8, padding: '7px 10px',
-                  fontSize: 12, fontFamily: 'var(--font-sans)', resize: 'none', background: '#fff', color: '#1a1a18', outline: 'none',
-                }}
-              />
-              <Button variant="primary" style={{ alignSelf: 'flex-end', borderRadius: 10 }}>Save</Button>
+              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Add a note, call summary, or update..." rows={2}
+                style={{ flex: 1, border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 8, padding: '7px 10px', fontSize: 12, fontFamily: 'var(--font-sans)', resize: 'none', background: '#fff', color: '#1a1a18', outline: 'none' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <select value={noteType} onChange={e => setNoteType(e.target.value)}
+                  style={{ padding: '5px 8px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 11, fontFamily: 'var(--font-sans)' }}>
+                  <option>Note</option>
+                  <option>Call summary</option>
+                  <option>Meeting</option>
+                  <option>Email</option>
+                </select>
+                <button onClick={saveNote} style={{ background: '#534AB7', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Save</button>
+              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {notes.map(n => (
-                <div key={n.id} style={{
-                  padding: '10px 12px', borderRadius: 10, background: '#F5F4F1',
-                  borderLeft: `3px solid ${n.important ? 'var(--red-400)' : n.positive ? 'var(--teal-400)' : 'var(--purple-600)'}`,
-                }}>
+                <div key={n.id} style={{ padding: '10px 12px', borderRadius: 10, background: '#F5F4F1', borderLeft: '3px solid #534AB7', position: 'relative' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                     <span style={{ fontSize: 11, fontWeight: 600 }}>{n.author}</span>
-                    <span style={{ fontSize: 10, color: '#888780' }}>{n.date}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 10, color: '#888780' }}>{new Date(n.created_at).toLocaleDateString()}</span>
+                      <button onClick={() => deleteNote(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B4B2A9', fontSize: 11 }}>✕</button>
+                    </div>
                   </div>
                   <div style={{ fontSize: 12, color: '#444441', lineHeight: 1.5 }}>{n.text}</div>
-                  <Tag color={n.type === 'Call summary' ? 'blue' : n.type === 'First call' ? 'teal' : 'purple'} style={{ marginTop: 5 }}>{n.type}</Tag>
+                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: '#EEEDFE', color: '#534AB7', marginTop: 5, display: 'inline-block' }}>{n.type}</span>
                 </div>
               ))}
-            </div>
-          </Card>
-
-          <Card>
-            <SectionTitle>Activity timeline</SectionTitle>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {timelineItems.map((item, i) => {
-                const Icon = item.icon
-                return (
-                  <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: i < timelineItems.length - 1 ? '0.5px solid rgba(0,0,0,0.06)' : 'none' }}>
-                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: item.bg, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={12} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: '#1a1a18' }}>{item.title}</div>
-                      <div style={{ fontSize: 11, color: '#888780', marginTop: 2 }}>{item.sub}</div>
-                      <div style={{ fontSize: 10, color: '#B4B2A9', marginTop: 2 }}>{item.time}</div>
-                    </div>
-                  </div>
-                )
-              })}
+              {notes.length === 0 && <div style={{ fontSize: 12, color: '#888780' }}>No notes yet — add your first note above</div>}
             </div>
           </Card>
         </div>
