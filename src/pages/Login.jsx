@@ -1,27 +1,22 @@
 import { useState } from 'react'
 
-const ADMIN_USERS = [
-  { email: 'james@flashenter.com', password: 'flash2024', name: 'James Rivera' },
-  { email: 'admin@flashenter.com', password: 'flash2024', name: 'Admin' },
-]
-
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
   function handleLogin() {
-    const user = ADMIN_USERS.find(u => u.email === email && u.password === password)
-    if (user) {
-      localStorage.setItem('flashenter_user', JSON.stringify(user))
-      onLogin(user)
+    if (email === 'james@flashenter.com' && password === 'flash2024') {
+      onLogin({ name: 'James Rivera', email: email })
+    } else if (email === 'admin@flashenter.com' && password === 'flash2024') {
+      onLogin({ name: 'Admin', email: email })
     } else {
       setError('Invalid email or password')
     }
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F4F1', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F4F1' }}>
       <div style={{ width: 360, background: '#fff', borderRadius: 20, padding: 32, boxShadow: '0 4px 40px rgba(0,0,0,0.08)' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ fontSize: 26, fontWeight: 700, marginBottom: 4 }}>
@@ -33,18 +28,18 @@ export default function Login({ onLogin }) {
           <div style={{ fontSize: 11, color: '#888780', marginBottom: 4 }}>Email address</div>
           <input value={email} onChange={e => setEmail(e.target.value)}
             placeholder="your@email.com"
-            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none', boxSizing: 'border-box' }} />
+            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
         </div>
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 11, color: '#888780', marginBottom: 4 }}>Password</div>
           <input value={password} onChange={e => setPassword(e.target.value)}
             type="password" placeholder="••••••••"
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none', boxSizing: 'border-box' }} />
+            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
         </div>
         {error && <div style={{ color: '#A32D2D', fontSize: 12, marginBottom: 12, textAlign: 'center' }}>{error}</div>}
         <button onClick={handleLogin}
-          style={{ width: '100%', padding: '11px', borderRadius: 40, border: 'none', background: '#534AB7', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+          style={{ width: '100%', padding: '11px', borderRadius: 40, border: 'none', background: '#534AB7', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
           Sign in
         </button>
       </div>
