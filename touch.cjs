@@ -1,0 +1,5 @@
+const fs = require('fs')
+let c = fs.readFileSync('src/pages/Signup.jsx', 'utf8')
+c = c.replace('Back to plans</button>', 'Back to plans </button>')
+fs.writeFileSync('src/pages/Signup.jsx', c)
+console.log('Done')
