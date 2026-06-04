@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Contacts from './pages/Contacts'
 import ContactDetail from './pages/ContactDetail'
 import VAPool from './pages/VAPool'
+import VAPortal from './pages/VAPortal'
 import Onboarding from './pages/Onboarding'
 import Timesheets from './pages/Timesheets'
 import Payroll from './pages/Payroll'
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/markets" element={<Markets />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/va-portal/:id" element={<VAPortal />} />
         </Routes>
       </Layout>
     </BrowserRouter>
