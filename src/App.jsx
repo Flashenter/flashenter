@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Contacts from './pages/Contacts'
 import ContactDetail from './pages/ContactDetail'
@@ -113,6 +114,7 @@ export default function App() {
       <Routes>
         <Route path="/va-portal/:id" element={<VAPortal />} />
         <Route path="/client-portal/:id" element={<ClientPortal />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="*" element={
           user ? (
             <Layout user={user} org={org} onLogout={handleLogout}>
