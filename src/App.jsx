@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import Login from './pages/Login'
@@ -14,25 +14,11 @@ import { Leads, Deals, Markets, Settings, Invoices } from './pages/Placeholders'
 export default function App() {
   const [user, setUser] = useState(null)
 
-  useEffect(() => {
-    const saved = localStorage.getItem('flashenter_user')
-    if (saved) setUser(JSON.parse(saved))
-  }, [])
-
-  function handleLogin(user) {
-    setUser(user)
-  }
-
-  function handleLogout() {
-    localStorage.removeItem('flashenter_user')
-    setUser(null)
-  }
-
-  if (!user) return <Login onLogin={handleLogin} />
+  if (!user) return <Login onLogin={setUser} />
 
   return (
     <BrowserRouter>
-      <Layout user={user} onLogout={handleLogout}>
+      <Layout user={user} onLogout={() => setUser(null)}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/contacts" element={<Contacts />} />
