@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Star, X } from 'lucide-react'
+import { Plus, X, Copy, Check } from 'lucide-react'
 import { MetricCard, Avatar, Button, PageHeader } from '../components/ui'
 import { supabase } from '../lib/supabase'
 
@@ -10,6 +10,7 @@ export default function VAPool() {
   const [showAdd, setShowAdd] = useState(false)
   const [assigning, setAssigning] = useState(null)
   const [selectedClient, setSelectedClient] = useState('')
+  const [copied, setCopied] = useState(null)
   const [newVA, setNewVA] = useState({
     name: '', role: '', country: '', city: '', flag: '',
     timezone: '', status: 'available', type: 'Full-time',
@@ -41,14 +42,20 @@ export default function VAPool() {
     if (!selectedClient) return alert('Please select a client')
     const client = clients.find(c => c.id === selectedClient)
     const { error } = await supabase.from('vas').update({
-      status: 'assigned',
-      assigned_to: client.name
+      status: 'assigned', assigned_to: client.name
     }).eq('id', assigning.id)
     if (error) { alert('Error: ' + error.message) } else {
       setAssigning(null)
       setSelectedClient('')
       fetchVAs()
     }
+  }
+
+  function copyPortalLink(vaId) {
+    const link = `${window.location.origin}/va-portal/${vaId}`
+    navigator.clipboard.writeText(link)
+    setCopied(vaId)
+    setTimeout(() => setCopied(null), 2000)
   }
 
   const fields = [
@@ -69,15 +76,14 @@ export default function VAPool() {
         <Button variant="primary" icon={Plus} onClick={() => setShowAdd(true)}>Add VA</Button>
       </PageHeader>
 
-      {/* Assign to client popup */}
       {assigning && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#fff', borderRadius: 16, padding: 24, width: 400, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div style={{ fontSize: 15, fontWeight: 600 }}>Assign {assigning.name}</div>
-              <button onClick={() => setAssigning(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888780' }}><X size={18} /></button>
+              <button onClick={() => setAssigning(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
             </div>
-            <div style={{ fontSize: 12, color: '#888780', marginBottom: 8 }}>Select client to assign this VA to:</div>
+            <div style={{ fontSize: 12, color: '#888780', marginBottom: 8 }}>Select client:</div>
             <select value={selectedClient} onChange={e => setSelectedClient(e.target.value)}
               style={{ width: '100%', padding: '10px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, fontFamily: 'var(--font-sans)', marginBottom: 16, outline: 'none' }}>
               <option value="">-- Select a client --</option>
@@ -87,7 +93,7 @@ export default function VAPool() {
             </select>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={assignToClient} style={{ flex: 1, background: '#534AB7', color: '#fff', border: 'none', borderRadius: 40, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                Confirm assignment
+                Confirm
               </button>
               <button onClick={() => setAssigning(null)} style={{ background: '#F5F4F1', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 40, padding: '10px 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                 Cancel
@@ -168,7 +174,7 @@ export default function VAPool() {
                 {va.experience && <div style={{ fontSize: 11, color: '#5F5E5A' }}>⏱ {va.experience} · {va.timezone}</div>}
                 <div style={{ fontSize: 11, color: '#5F5E5A' }}>{va.flag} {va.city}, {va.country}</div>
               </div>
-              <div style={{ padding: '8px 12px', borderTop: '0.5px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ padding: '8px 12px', borderTop: '0.5px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {va.status === 'available' ? (
                   <button onClick={() => { setAssigning(va); setSelectedClient('') }}
                     style={{ width: '100%', padding: '7px', borderRadius: 8, background: '#EEEDFE', border: '0.5px solid #AFA9EC', color: '#534AB7', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
@@ -180,6 +186,10 @@ export default function VAPool() {
                     Mark as available
                   </button>
                 )}
+                <button onClick={() => copyPortalLink(va.id)}
+                  style={{ width: '100%', padding: '7px', borderRadius: 8, background: copied === va.id ? '#EAF3DE' : '#F5F4F1', border: '0.5px solid rgba(0,0,0,0.08)', color: copied === va.id ? '#3B6D11' : '#5F5E5A', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                  {copied === va.id ? <><Check size={11} /> Link copied!</> : <><Copy size={11} /> Copy portal link</>}
+                </button>
               </div>
             </div>
           ))}
