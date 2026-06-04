@@ -11,6 +11,7 @@ import ClientPortal from './pages/ClientPortal'
 import Onboarding from './pages/Onboarding'
 import Timesheets from './pages/Timesheets'
 import Payroll from './pages/Payroll'
+import TeamMembers from './pages/TeamMembers'
 import { Leads, Deals, Markets, Settings, Invoices } from './pages/Placeholders'
 import { supabase } from './lib/supabase'
 
@@ -105,6 +106,7 @@ export default function App() {
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/markets" element={<Markets />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/team" element={<TeamMembers />} />
               </Routes>
             </Layout>
           ) : (

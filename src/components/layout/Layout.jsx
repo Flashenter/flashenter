@@ -17,7 +17,7 @@ const navItems = [
   { icon: Wallet, label: 'Payroll', path: '/payroll', urgent: true },
   null,
   { icon: Globe, label: 'Markets', path: '/markets' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
+  { icon: Settings, label: 'Settings', path: '/settings' },{ icon: Users, label: 'Team', path: '/team' },
 ]
 
 export default function Layout({ children, user, onLogout }) {
