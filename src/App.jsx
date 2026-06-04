@@ -7,6 +7,7 @@ import Contacts from './pages/Contacts'
 import ContactDetail from './pages/ContactDetail'
 import VAPool from './pages/VAPool'
 import VAPortal from './pages/VAPortal'
+import ClientPortal from './pages/ClientPortal'
 import Onboarding from './pages/Onboarding'
 import Timesheets from './pages/Timesheets'
 import Payroll from './pages/Payroll'
@@ -19,6 +20,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/va-portal/:id" element={<VAPortal />} />
+        <Route path="/client-portal/:id" element={<ClientPortal />} />
         <Route path="*" element={
           user ? (
             <Layout user={user} onLogout={() => setUser(null)}>
