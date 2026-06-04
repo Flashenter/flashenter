@@ -110,7 +110,7 @@ export function SectionTitle({ children, action }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
       <h2 style={{ fontSize: 13, fontWeight: 600, color: '#1a1a18' }}>{children}</h2>
-      {action && <span style={{ fontSize: 11, color: 'var(--purple-600)', cursor: 'pointer' }}>{action}</span>}
+      {action && <span style={{ fontSize: 11, color: 'var(--purple-600)', cursor: 'pointer' }} onClick={action.onClick}>{action.label}</span>}
     </div>
   )
 }
