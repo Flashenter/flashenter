@@ -1,5 +1,5 @@
 const fs = require('fs')
 let c = fs.readFileSync('src/pages/Signup.jsx', 'utf8')
-c = c.replace('&larr; Back to plans', 'Back to plans')
+c = c.replace('< Back to plans', 'Back to plans')
 fs.writeFileSync('src/pages/Signup.jsx', c)
 console.log('Done')
