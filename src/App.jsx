@@ -15,27 +15,33 @@ import { Leads, Deals, Markets, Settings, Invoices } from './pages/Placeholders'
 export default function App() {
   const [user, setUser] = useState(null)
 
-  if (!user) return <Login onLogin={setUser} />
-
   return (
     <BrowserRouter>
-      <Layout user={user} onLogout={() => setUser(null)}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/contacts" element={<Contacts />} />
-          <Route path="/contacts/:id" element={<ContactDetail />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/deals" element={<Deals />} />
-          <Route path="/va-pool" element={<VAPool />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/timesheets" element={<Timesheets />} />
-          <Route path="/payroll" element={<Payroll />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/markets" element={<Markets />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/va-portal/:id" element={<VAPortal />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        <Route path="/va-portal/:id" element={<VAPortal />} />
+        <Route path="*" element={
+          user ? (
+            <Layout user={user} onLogout={() => setUser(null)}>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/contacts" element={<Contacts />} />
+                <Route path="/contacts/:id" element={<ContactDetail />} />
+                <Route path="/leads" element={<Leads />} />
+                <Route path="/deals" element={<Deals />} />
+                <Route path="/va-pool" element={<VAPool />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/timesheets" element={<Timesheets />} />
+                <Route path="/payroll" element={<Payroll />} />
+                <Route path="/invoices" element={<Invoices />} />
+                <Route path="/markets" element={<Markets />} />
+                <Route path="/settings" element={<Settings />} />
+              </Routes>
+            </Layout>
+          ) : (
+            <Login onLogin={setUser} />
+          )
+        } />
+      </Routes>
     </BrowserRouter>
   )
 }
