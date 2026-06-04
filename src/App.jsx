@@ -17,6 +17,7 @@ import { supabase } from './lib/supabase'
 
 export default function App() {
   const [user, setUser] = useState(null)
+  const [org, setOrg] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pendingApproval, setPendingApproval] = useState(false)
 
@@ -28,7 +29,7 @@ export default function App() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) checkUser(session.user)
-      else { setUser(null); setLoading(false) }
+      else { setUser(null); setOrg(null); setLoading(false) }
     })
 
     return () => subscription.unsubscribe()
@@ -50,19 +51,39 @@ export default function App() {
       }])
       setPendingApproval(true)
       setLoading(false)
-    } else if (!member.approved) {
+      return
+    }
+
+    if (!member.approved) {
       setPendingApproval(true)
       setLoading(false)
-    } else {
-      setUser({ name: member.name, email: member.email, role: member.role, avatar: member.avatar_url })
-      setPendingApproval(false)
-      setLoading(false)
+      return
     }
+
+    const orgId = member.org_id
+    let orgData = null
+
+    if (orgId) {
+      const { data } = await supabase.from('organizations').select('*').eq('id', orgId).single()
+      orgData = data
+    } else {
+      const { data } = await supabase.from('organizations').select('*').eq('owner_email', authUser.email).single()
+      orgData = data
+      if (orgData) {
+        await supabase.from('team_members').update({ org_id: orgData.id }).eq('email', authUser.email)
+      }
+    }
+
+    setUser({ name: member.name, email: member.email, role: member.role, avatar: member.avatar_url })
+    setOrg(orgData)
+    setPendingApproval(false)
+    setLoading(false)
   }
 
   async function handleLogout() {
     await supabase.auth.signOut()
     setUser(null)
+    setOrg(null)
   }
 
   if (loading) return (
@@ -85,6 +106,8 @@ export default function App() {
     </div>
   )
 
+  const sharedProps = { org, user }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -92,21 +115,21 @@ export default function App() {
         <Route path="/client-portal/:id" element={<ClientPortal />} />
         <Route path="*" element={
           user ? (
-            <Layout user={user} onLogout={handleLogout}>
+            <Layout user={user} org={org} onLogout={handleLogout}>
               <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/contacts" element={<Contacts />} />
-                <Route path="/contacts/:id" element={<ContactDetail />} />
-                <Route path="/leads" element={<Leads />} />
-                <Route path="/deals" element={<Deals />} />
-                <Route path="/va-pool" element={<VAPool />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/timesheets" element={<Timesheets />} />
-                <Route path="/payroll" element={<Payroll />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/markets" element={<Markets />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/team" element={<TeamMembers />} />
+                <Route path="/" element={<Dashboard {...sharedProps} />} />
+                <Route path="/contacts" element={<Contacts {...sharedProps} />} />
+                <Route path="/contacts/:id" element={<ContactDetail {...sharedProps} />} />
+                <Route path="/leads" element={<Leads {...sharedProps} />} />
+                <Route path="/deals" element={<Deals {...sharedProps} />} />
+                <Route path="/va-pool" element={<VAPool {...sharedProps} />} />
+                <Route path="/onboarding" element={<Onboarding {...sharedProps} />} />
+                <Route path="/timesheets" element={<Timesheets {...sharedProps} />} />
+                <Route path="/payroll" element={<Payroll {...sharedProps} />} />
+                <Route path="/invoices" element={<Invoices {...sharedProps} />} />
+                <Route path="/markets" element={<Markets {...sharedProps} />} />
+                <Route path="/settings" element={<Settings {...sharedProps} />} />
+                <Route path="/team" element={<TeamMembers {...sharedProps} />} />
               </Routes>
             </Layout>
           ) : (
