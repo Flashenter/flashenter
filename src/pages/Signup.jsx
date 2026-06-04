@@ -209,7 +209,7 @@ export default function Signup() {
 
         {step === 2 && (
           <div style={{ maxWidth: 480, margin: '0 auto', background: '#fff', borderRadius: 20, padding: 40, boxShadow: '0 4px 40px rgba(0,0,0,0.08)' }}>
-            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Create your account</div>
+            <button onClick={() => setStep(1)} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#888780', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 16, fontFamily: 'DM Sans, sans-serif' }}>← Back to plans</button><div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Create your account</div>
             <div style={{ fontSize: 13, color: '#888780', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>{currentPlan?.name} · {billing === 'monthly' ? `$${currentPlan?.monthlyPrice}/mo` : `$${currentPlan?.annualPrice}/yr`}</span>
               <span onClick={() => setStep(1)} style={{ color: '#534AB7', cursor: 'pointer' }}>Change →</span>
