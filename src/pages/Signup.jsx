@@ -175,7 +175,7 @@ export default function Signup() {
         {step === 2 && (
           <div style={{ maxWidth: 480, margin: '0 auto' }}>
             <button onClick={() => setStep(1)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#534AB7', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 20, fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
-              &larr; Back to plans
+              < Back to plans
             </button>
             <div style={{ background: '#fff', borderRadius: 20, padding: 40, boxShadow: '0 4px 40px rgba(0,0,0,0.08)' }}>
               <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Create your account</div>
