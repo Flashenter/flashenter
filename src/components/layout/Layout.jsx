@@ -20,7 +20,7 @@ const navItems = [
   { icon: Settings, label: 'Settings', path: '/settings' },
 ]
 
-export default function Layout({ children }) {
+export default function Layout({ children, user, onLogout }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -57,8 +57,8 @@ export default function Layout({ children }) {
               fontSize: 11, fontWeight: 600,
             }}>JR</div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: '#1a1a18', lineHeight: 1.2 }}>James Rivera</div>
-              <div style={{ fontSize: 10, color: '#888780' }}>Admin · DR</div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: '#1a1a18', lineHeight: 1.2 }}>{user?.name || 'Admin'}</div><button onClick={onLogout} style={{ fontSize: 10, color: '#888780', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', marginTop: 2 }}>Sign out</button>
+              <div style={{ fontSize: 10, color: '#888780' }}>{user?.email || 'Admin'}</div>
             </div>
             <ChevronDown size={12} color="#888780" />
           </button>
