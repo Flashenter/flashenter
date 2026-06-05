@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
@@ -100,9 +101,7 @@ export default function App() {
         <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}><span style={{ color: '#534AB7' }}>Flash</span>enter</div>
         <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Awaiting approval</div>
         <div style={{ fontSize: 13, color: '#888780', lineHeight: 1.6, marginBottom: 24 }}>Your account has been registered. An admin needs to approve your access before you can log in.</div>
-        <button onClick={handleLogout} style={{ padding: '10px 24px', borderRadius: 40, border: '0.5px solid rgba(0,0,0,0.1)', background: '#F5F4F1', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-          Sign out
-        </button>
+        <button onClick={handleLogout} style={{ padding: '10px 24px', borderRadius: 40, border: '0.5px solid rgba(0,0,0,0.1)', background: '#F5F4F1', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>Sign out</button>
       </div>
     </div>
   )
@@ -115,6 +114,7 @@ export default function App() {
         <Route path="/va-portal/:id" element={<VAPortal />} />
         <Route path="/client-portal/:id" element={<ClientPortal />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
         <Route path="*" element={
           user ? (
             <Layout user={user} org={org} onLogout={handleLogout}>
@@ -135,7 +135,7 @@ export default function App() {
               </Routes>
             </Layout>
           ) : (
-            <Login />
+            <Landing />
           )
         } />
       </Routes>
