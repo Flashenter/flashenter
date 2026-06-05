@@ -1,5 +1,14 @@
 import { useState } from 'react'
+import { loadStripe } from '@stripe/stripe-js'
 import { supabase } from '../lib/supabase'
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+
+const PRICE_IDS = {
+  starter: import.meta.env.VITE_STRIPE_STARTER_PRICE,
+  pro: import.meta.env.VITE_STRIPE_PRO_PRICE,
+  elite: import.meta.env.VITE_STRIPE_ELITE_PRICE,
+}
 
 const plans = [
   {
@@ -65,7 +74,7 @@ export default function Signup() {
       email: form.email,
       owner_email: form.email,
       plan: selectedPlan,
-      status: 'trial'
+      status: selectedPlan === 'basic' ? 'active' : 'trial'
     }]).select().single()
 
     if (orgError) {
@@ -82,8 +91,31 @@ export default function Signup() {
       org_id: org.id
     }])
 
-    setSuccess(true)
-    setLoading(false)
+    if (selectedPlan === 'basic') {
+      setSuccess(true)
+      setLoading(false)
+      return
+    }
+
+    const stripe = await stripePromise
+    const priceId = PRICE_IDS[selectedPlan]
+
+    if (priceId) {
+      const { error: stripeError } = await stripe.redirectToCheckout({
+        lineItems: [{ price: priceId, quantity: 1 }],
+        mode: 'subscription',
+        successUrl: `${window.location.origin}/?signup=success`,
+        cancelUrl: `${window.location.origin}/signup`,
+        customerEmail: form.email,
+      })
+      if (stripeError) {
+        setError('Payment error: ' + stripeError.message)
+        setLoading(false)
+      }
+    } else {
+      setSuccess(true)
+      setLoading(false)
+    }
   }
 
   const currentPlan = plans.find(p => p.id === selectedPlan)
@@ -116,7 +148,7 @@ export default function Signup() {
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 16px' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Start managing your VA team today</div>
-          <div style={{ fontSize: 15, color: '#888780', marginBottom: 24 }}>7-day free trial · No credit card required</div>
+          <div style={{ fontSize: 15, color: '#888780', marginBottom: 24 }}>7-day free trial · No credit card required for Basic</div>
           <div style={{ display: 'inline-flex', background: '#fff', borderRadius: 40, padding: 4, border: '0.5px solid rgba(0,0,0,0.08)', gap: 4 }}>
             <button onClick={() => setBilling('monthly')} style={{ padding: '8px 20px', borderRadius: 40, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: billing === 'monthly' ? 600 : 400, background: billing === 'monthly' ? '#534AB7' : 'transparent', color: billing === 'monthly' ? '#fff' : '#5F5E5A', fontFamily: 'DM Sans, sans-serif' }}>Monthly</button>
             <button onClick={() => setBilling('annual')} style={{ padding: '8px 20px', borderRadius: 40, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: billing === 'annual' ? 600 : 400, background: billing === 'annual' ? '#534AB7' : 'transparent', color: billing === 'annual' ? '#fff' : '#5F5E5A', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -179,8 +211,8 @@ export default function Signup() {
             </button>
             <div style={{ background: '#fff', borderRadius: 20, padding: 40, boxShadow: '0 4px 40px rgba(0,0,0,0.08)' }}>
               <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Create your account</div>
-              <div style={{ fontSize: 13, color: '#888780', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>{currentPlan?.name} · {billing === 'monthly' ? `$${currentPlan?.monthlyPrice}/mo` : `$${currentPlan?.annualPrice}/yr`}</span>
+              <div style={{ fontSize: 13, color: '#888780', marginBottom: 24 }}>
+                {currentPlan?.name} · {billing === 'monthly' ? `$${currentPlan?.monthlyPrice}/mo` : `$${currentPlan?.annualPrice}/yr`}
               </div>
               {error && (
                 <div style={{ background: '#FCEBEB', border: '0.5px solid #F09595', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: '#791F1F' }}>{error}</div>
@@ -201,11 +233,10 @@ export default function Signup() {
               </div>
               <button onClick={handleSignup} disabled={loading}
                 style={{ width: '100%', padding: '12px', borderRadius: 40, border: 'none', background: '#534AB7', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', opacity: loading ? 0.7 : 1 }}>
-                {loading ? 'Creating account...' : 'Start 7-day free trial'}
+                {loading ? 'Creating account...' : selectedPlan === 'basic' ? 'Create free account' : 'Continue to payment'}
               </button>
               <div style={{ textAlign: 'center', marginTop: 16, fontSize: 11, color: '#B4B2A9', lineHeight: 1.6 }}>
-                By signing up you agree to our Terms of Service.<br />
-                7-day free trial. No credit card required.
+                {selectedPlan === 'basic' ? 'Free forever. No credit card required.' : '7-day free trial. Cancel anytime.'}
               </div>
             </div>
           </div>
