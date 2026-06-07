@@ -14,6 +14,7 @@ import Onboarding from './pages/Onboarding'
 import Timesheets from './pages/Timesheets'
 import Payroll from './pages/Payroll'
 import TeamMembers from './pages/TeamMembers'
+import Inbox from './pages/Inbox'
 import { Leads, Deals, Markets, Settings, Invoices } from './pages/Placeholders'
 import { supabase } from './lib/supabase'
 
@@ -132,6 +133,7 @@ export default function App() {
                 <Route path="/markets" element={<Markets {...sharedProps} />} />
                 <Route path="/settings" element={<Settings {...sharedProps} />} />
                 <Route path="/team" element={<TeamMembers {...sharedProps} />} />
+                <Route path="/inbox" element={<Inbox {...sharedProps} />} />
               </Routes>
             </Layout>
           ) : (
