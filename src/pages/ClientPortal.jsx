@@ -11,11 +11,9 @@ export default function ClientPortal() {
   const [signed, setSigned] = useState(false)
   const [holidays, setHolidays] = useState([])
   const [success, setSuccess] = useState('')
-
   const [msgForm, setMsgForm] = useState({ subject: '', body: '' })
   const [holidayForm, setHolidayForm] = useState({ date: '', reason: '' })
   const [otForm, setOtForm] = useState({ va_name: '', hours: '', reason: '' })
-
   const canvasRef = useRef(null)
   const [drawing, setDrawing] = useState(false)
   const [hasSig, setHasSig] = useState(false)
@@ -42,10 +40,10 @@ export default function ClientPortal() {
   async function sendMessage() {
     if (!msgForm.subject || !msgForm.body) return alert('Please fill in all fields')
     const { error } = await supabase.from('messages').insert([{
-      from_name: client.name, from_type: 'client', org_id: client.org_id,
+      from_name: client.name, from_type: 'client',
       to_name: 'Flashenter Admin',
       subject: msgForm.subject, body: msgForm.body,
-      contact_id: id
+      contact_id: id, org_id: client.org_id
     }])
     if (error) { alert('Error: ' + error.message) } else {
       setSuccess('Message sent!')
@@ -62,7 +60,7 @@ export default function ClientPortal() {
     const { error } = await supabase.from('signatures').insert([{
       signer_name: client.name, signer_type: 'client',
       document_name: 'Service Agreement',
-      signature_data, contact_id: id
+      signature_data, contact_id: id, org_id: client.org_id
     }])
     if (error) { alert('Error: ' + error.message) } else {
       setSigned(true)
@@ -74,8 +72,9 @@ export default function ClientPortal() {
   async function addHoliday() {
     if (!holidayForm.date) return alert('Please select a date')
     const { error } = await supabase.from('client_holidays').insert([{
-      contact_id: id, client_name: client.name, org_id: client.org_id,
-      date: holidayForm.date, reason: holidayForm.reason
+      contact_id: id, client_name: client.name,
+      date: holidayForm.date, reason: holidayForm.reason,
+      org_id: client.org_id
     }])
     if (error) { alert('Error: ' + error.message) } else {
       setSuccess('Holiday added!')
@@ -88,11 +87,11 @@ export default function ClientPortal() {
   async function approveOT() {
     if (!otForm.va_name || !otForm.hours) return alert('Please fill in VA name and hours')
     const { error } = await supabase.from('messages').insert([{
-      from_name: client.name, from_type: 'client', org_id: client.org_id,
+      from_name: client.name, from_type: 'client',
       to_name: 'Flashenter Admin',
-      subject: `OT Approval: ${otForm.va_name}`,
-      body: `I approve ${otForm.hours} overtime hours for ${otForm.va_name}. Reason: ${otForm.reason}`,
-      contact_id: id
+      subject: 'OT Approval: ' + otForm.va_name,
+      body: 'I approve ' + otForm.hours + ' overtime hours for ' + otForm.va_name + '. Reason: ' + otForm.reason,
+      contact_id: id, org_id: client.org_id
     }])
     if (error) { alert('Error: ' + error.message) } else {
       setSuccess('OT approved and sent to admin!')
@@ -148,19 +147,17 @@ export default function ClientPortal() {
   )
 
   const tabs = [
-    { key: 'overview', label: '🏠 Overview' },
-    { key: 'contract', label: '✍️ Contract' },
-    { key: 'holidays', label: '📅 Holidays' },
-    { key: 'overtime', label: '⏱ Approve OT' },
-    { key: 'messages', label: '💬 Messages' },
+    { key: 'overview', label: 'Overview' },
+    { key: 'contract', label: signed ? 'Contract ✅' : 'Contract ⚠️' },
+    { key: 'holidays', label: 'Holidays' },
+    { key: 'overtime', label: 'Approve OT' },
+    { key: 'messages', label: 'Messages' },
   ]
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F4F1', fontFamily: 'DM Sans, sans-serif' }}>
       <div style={{ background: '#fff', borderBottom: '0.5px solid rgba(0,0,0,0.08)', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 20, fontWeight: 700 }}>
-          <span style={{ color: '#534AB7' }}>Flash</span>enter
-        </div>
+        <div style={{ fontSize: 20, fontWeight: 700 }}><span style={{ color: '#534AB7' }}>Flash</span>enter</div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 13, fontWeight: 600 }}>{client.name}</div>
           <div style={{ fontSize: 11, color: '#888780' }}>{client.company} · {client.country}</div>
@@ -177,7 +174,8 @@ export default function ClientPortal() {
         <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
-              padding: '8px 16px', borderRadius: 40, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: tab === t.key ? 600 : 400,
+              padding: '8px 16px', borderRadius: 40, border: 'none', cursor: 'pointer', fontSize: 12,
+              fontWeight: tab === t.key ? 600 : 400,
               background: tab === t.key ? '#534AB7' : '#fff',
               color: tab === t.key ? '#fff' : '#5F5E5A',
               fontFamily: 'DM Sans, sans-serif'
@@ -212,7 +210,7 @@ export default function ClientPortal() {
                   <div style={{ fontSize: 12, color: '#854F0B', marginTop: 2 }}>Please sign your service agreement</div>
                 </div>
                 <button onClick={() => setTab('contract')} style={{ padding: '8px 16px', borderRadius: 40, border: 'none', background: '#EF9F27', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-                  Sign now →
+                  Sign now
                 </button>
               </div>
             )}
@@ -225,7 +223,7 @@ export default function ClientPortal() {
             <div style={{ fontSize: 12, color: '#888780', marginBottom: 20 }}>Please read and sign your service agreement below</div>
             <div style={{ background: '#F5F4F1', borderRadius: 12, padding: 20, marginBottom: 20, fontSize: 13, lineHeight: 1.8, color: '#1a1a18' }}>
               <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 15 }}>VIRTUAL ASSISTANT SERVICE AGREEMENT</div>
-              <p>This agreement is between <strong>Flashenter</strong> ("Service Provider") and <strong>{client.name}</strong> / <strong>{client.company}</strong> ("Client").</p>
+              <p>This agreement is between <strong>Flashenter</strong> and <strong>{client.name}</strong> / <strong>{client.company}</strong>.</p>
               <p><strong>Services:</strong> Flashenter will provide virtual assistant services as agreed upon.</p>
               <p><strong>Payment:</strong> {client.budget || 'As agreed upon with Flashenter administration.'}</p>
               <p><strong>Confidentiality:</strong> All information shared between parties remains strictly confidential.</p>
@@ -235,7 +233,7 @@ export default function ClientPortal() {
               <p>By signing below, you agree to all terms and conditions of this service agreement.</p>
             </div>
             {signed ? (
-              <div style={{ textAlign: 'center', padding: 20, background: '#EAF3DE', borderRadius: 12, color: '#3B6D11', fontWeight: 600 }}>
+              <div style={{ textAlign: 'center', padding: 20, background: '#EAF3DE', borderRadius: 12, color: '#3B6D11', fontWeight: 600, fontSize: 15 }}>
                 ✅ Contract signed successfully!
               </div>
             ) : (
@@ -247,7 +245,7 @@ export default function ClientPortal() {
                   onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={() => setDrawing(false)} />
                 <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                   <button onClick={saveSignature} style={{ flex: 1, padding: '11px', borderRadius: 40, border: 'none', background: '#534AB7', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-                    ✍️ Sign Agreement
+                    Sign Agreement
                   </button>
                   <button onClick={clearSig} style={{ padding: '11px 20px', borderRadius: 40, border: '0.5px solid rgba(0,0,0,0.1)', background: '#F5F4F1', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
                     Clear
@@ -287,7 +285,12 @@ export default function ClientPortal() {
                   {holidays.map(h => (
                     <div key={h.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F5F4F1', borderRadius: 10 }}>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>📅 {h.date}</div>
-                      <div style={{ fontSize: 12, color: '#888780' }}>{h.reason}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ fontSize: 12, color: '#888780' }}>{h.reason}</div>
+                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: h.status === 'approved' ? '#EAF3DE' : h.status === 'rejected' ? '#FCEBEB' : '#FAEEDA', color: h.status === 'approved' ? '#3B6D11' : h.status === 'rejected' ? '#A32D2D' : '#854F0B' }}>
+                          {h.status === 'approved' ? '✅ Approved' : h.status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -316,12 +319,12 @@ export default function ClientPortal() {
               <div>
                 <div style={{ fontSize: 11, color: '#888780', marginBottom: 4 }}>Reason</div>
                 <textarea value={otForm.reason} onChange={e => setOtForm(p => ({ ...p, reason: e.target.value }))}
-                  placeholder="e.g. Product launch this week requires extra support" rows={3}
+                  placeholder="e.g. Product launch this week" rows={3}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, outline: 'none', boxSizing: 'border-box', resize: 'none', fontFamily: 'DM Sans, sans-serif' }} />
               </div>
             </div>
             <button onClick={approveOT} style={{ width: '100%', padding: '12px', borderRadius: 40, border: 'none', background: '#534AB7', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-              ✅ Approve Overtime
+              Approve Overtime
             </button>
           </div>
         )}
