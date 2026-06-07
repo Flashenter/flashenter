@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Star, Briefcase, Clock, Wallet,
-  FileText, Globe, Settings, BookUser, UserCheck, Bell, Search, ChevronDown
+  FileText, Globe, Settings, BookUser, UserCheck, Bell, Search, ChevronDown, Mail
 } from 'lucide-react'
 
 const navItems = [
@@ -17,7 +17,7 @@ const navItems = [
   { icon: Wallet, label: 'Payroll', path: '/payroll', urgent: true },
   null,
   { icon: Globe, label: 'Markets', path: '/markets' },
-  { icon: Settings, label: 'Settings', path: '/settings' },{ icon: Users, label: 'Team', path: '/team' },
+  { icon: Settings, label: 'Settings', path: '/settings' },{ icon: Users, label: 'Team', path: '/team' },{ icon: Mail, label: 'Inbox', path: '/inbox' },
 ]
 
 export default function Layout({ children, user, onLogout }) {
