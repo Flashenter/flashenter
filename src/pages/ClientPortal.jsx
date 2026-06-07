@@ -64,7 +64,7 @@ export default function ClientPortal() {
     }])
     if (error) { alert('Error: ' + error.message) } else {
       setSigned(true)
-      setSuccess('Contract signed!')
+      setSigned(true); setSuccess('Contract signed!'); supabase.from('messages').insert([{ from_name: client.name, from_type: 'client
     }
     setTimeout(() => setSuccess(''), 4000)
   }
