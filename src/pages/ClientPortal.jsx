@@ -62,9 +62,20 @@ export default function ClientPortal() {
       document_name: 'Service Agreement',
       signature_data, contact_id: id, org_id: client.org_id
     }])
-    if (error) { alert('Error: ' + error.message) } else {
+    if (error) {
+      alert('Error: ' + error.message)
+    } else {
+      await supabase.from('messages').insert([{
+        from_name: client.name,
+        from_type: 'client',
+        to_name: 'Flashenter Admin',
+        subject: 'Contract signed',
+        body: client.name + ' has signed the service agreement.',
+        contact_id: id,
+        org_id: client.org_id
+      }])
       setSigned(true)
-      setSigned(true); setSuccess('Contract signed!'); supabase.from('messages').insert([{ from_name: client.name, from_type: 'client
+      setSuccess('Contract signed!')
     }
     setTimeout(() => setSuccess(''), 4000)
   }
@@ -221,13 +232,12 @@ export default function ClientPortal() {
           <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: '0.5px solid rgba(0,0,0,0.08)' }}>
             <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Service Agreement</div>
             <div style={{ fontSize: 12, color: '#888780', marginBottom: 20 }}>Please read and sign your service agreement below</div>
-            <div style={{ background: '#F5F4F1', borderRadius: 12, padding: 20, marginBottom: 20, fontSize: 13, lineHeight: 1.8, color: '#1a1a18' }}>
+            <div style={{ background: '#F5F4F1', borderRadius: 12, padding: 20, marginBottom: 20, fontSize: 13, lineHeight: 1.8 }}>
               <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 15 }}>VIRTUAL ASSISTANT SERVICE AGREEMENT</div>
               <p>This agreement is between <strong>Flashenter</strong> and <strong>{client.name}</strong> / <strong>{client.company}</strong>.</p>
               <p><strong>Services:</strong> Flashenter will provide virtual assistant services as agreed upon.</p>
               <p><strong>Payment:</strong> {client.budget || 'As agreed upon with Flashenter administration.'}</p>
               <p><strong>Confidentiality:</strong> All information shared between parties remains strictly confidential.</p>
-              <p><strong>Communication:</strong> All requests and changes must go through the Flashenter platform.</p>
               <p><strong>Overtime:</strong> Any overtime must be approved through the client portal before being worked.</p>
               <p><strong>Holidays:</strong> Client must submit holiday dates at least 2 weeks in advance.</p>
               <p>By signing below, you agree to all terms and conditions of this service agreement.</p>
