@@ -53,7 +53,7 @@ export default function VAPortal() {
       }
     }
     const { error } = await supabase.from('va_submissions').insert([{
-      va_id: id, va_name: va.name,
+      va_id: id, va_name: va.name, org_id: va.org_id,
       week_start: tsForm.week_start,
       hours: parseInt(tsForm.hours),
       overtime: parseInt(tsForm.overtime) || 0,
