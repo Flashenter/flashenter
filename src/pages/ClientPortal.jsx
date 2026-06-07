@@ -42,7 +42,7 @@ export default function ClientPortal() {
   async function sendMessage() {
     if (!msgForm.subject || !msgForm.body) return alert('Please fill in all fields')
     const { error } = await supabase.from('messages').insert([{
-      from_name: client.name, from_type: 'client',
+      from_name: client.name, from_type: 'client', org_id: client.org_id,
       to_name: 'Flashenter Admin',
       subject: msgForm.subject, body: msgForm.body,
       contact_id: id
@@ -74,7 +74,7 @@ export default function ClientPortal() {
   async function addHoliday() {
     if (!holidayForm.date) return alert('Please select a date')
     const { error } = await supabase.from('client_holidays').insert([{
-      contact_id: id, client_name: client.name,
+      contact_id: id, client_name: client.name, org_id: client.org_id,
       date: holidayForm.date, reason: holidayForm.reason
     }])
     if (error) { alert('Error: ' + error.message) } else {
@@ -88,7 +88,7 @@ export default function ClientPortal() {
   async function approveOT() {
     if (!otForm.va_name || !otForm.hours) return alert('Please fill in VA name and hours')
     const { error } = await supabase.from('messages').insert([{
-      from_name: client.name, from_type: 'client',
+      from_name: client.name, from_type: 'client', org_id: client.org_id,
       to_name: 'Flashenter Admin',
       subject: `OT Approval: ${otForm.va_name}`,
       body: `I approve ${otForm.hours} overtime hours for ${otForm.va_name}. Reason: ${otForm.reason}`,
