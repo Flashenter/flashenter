@@ -1,6 +1,6 @@
-export function Card({ children, style = {}, className = '' }) {
+export function Card({ children, style = {}, className = '', onClick }) {
   return (
-    <div className={className} style={{
+    <div className={className} onClick={onClick} style={{
       background: '#fff',
       border: '0.5px solid rgba(0,0,0,0.08)',
       borderRadius: 14,
