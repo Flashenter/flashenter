@@ -14,7 +14,7 @@ const navItems = [
   { icon: BookUser, label: 'VA Pool', path: '/va-pool' },
   { icon: UserCheck, label: 'Onboarding', path: '/onboarding', alert: true },
   { icon: Clock, label: 'Timesheets', path: '/timesheets', badge: true },
-  { icon: Wallet, label: 'Payroll', path: '/payroll', urgent: true },
+   { icon: Wallet, label: 'Payroll', path: '/payroll', urgent: true },{ icon: FileText, label: 'Invoices', path: '/invoices' },
   null,
   { icon: Globe, label: 'Markets', path: '/markets' },
   { icon: Settings, label: 'Settings', path: '/settings' },{ icon: Users, label: 'Team', path: '/team' },{ icon: Mail, label: 'Inbox', path: '/inbox' },
