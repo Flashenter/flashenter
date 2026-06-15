@@ -15,7 +15,8 @@ import Timesheets from './pages/Timesheets'
 import Payroll from './pages/Payroll'
 import TeamMembers from './pages/TeamMembers'
 import Inbox from './pages/Inbox'
-import { Leads, Deals, Markets, Settings, Invoices } from './pages/Placeholders'
+import Invoices from './pages/Invoices'
+import { Leads, Deals, Markets, Settings } from './pages/Placeholders'
 import { supabase } from './lib/supabase'
 
 export default function App() {
