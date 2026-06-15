@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { sendEmail, contractSignedEmail, newMessageEmail } from '../lib/email'
+
+const ADMIN_EMAIL = 'info@nexbridgeva.com'
 
 export default function ClientPortal() {
   const { id } = useParams()
@@ -45,7 +48,10 @@ export default function ClientPortal() {
       subject: msgForm.subject, body: msgForm.body,
       contact_id: id, org_id: client.org_id
     }])
-    if (error) { alert('Error: ' + error.message) } else {
+    if (error) {
+      alert('Error: ' + error.message)
+    } else {
+      await sendEmail({ to: ADMIN_EMAIL, ...newMessageEmail(client.name, msgForm.subject, msgForm.body) })
       setSuccess('Message sent!')
       setMsgForm({ subject: '', body: '' })
       fetchClient()
@@ -74,6 +80,7 @@ export default function ClientPortal() {
         contact_id: id,
         org_id: client.org_id
       }])
+      await sendEmail({ to: ADMIN_EMAIL, ...contractSignedEmail(client.name, 'service') })
       setSigned(true)
       setSuccess('Contract signed!')
     }
