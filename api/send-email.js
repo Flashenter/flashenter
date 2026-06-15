@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      from: 'Flashenter <onboarding@resend.dev>',
+       from: 'Flashenter <notifications@flashenter.com>',
       to,
       subject,
       html
