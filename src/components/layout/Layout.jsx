@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Star, Briefcase, Clock, Wallet,
   FileText, Globe, Settings, BookUser, UserCheck, Bell, HelpCircle, Mail, ChevronDown, ChevronUp, Send
 } from 'lucide-react'
-import ChatWidget from './ChatWidget'
+import ChatWidget from '../ChatWidget'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
