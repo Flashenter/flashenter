@@ -46,6 +46,8 @@ const allQA = [
   { q: 'contract sign agreement', a: 'Send the portal link to your client or VA. They go to the Contract tab and sign digitally with their mouse or finger.' },
   { q: 'password login sign in access', a: 'Flashenter uses Google sign in. Go to flashenter.com and click "Continue with Google" to log in.' },
   { q: 'market country region', a: 'Go to Markets in the nav to see performance across all your active countries including DR, South Africa, Philippines, Colombia and Panama.' },
+  { q: 'whatsapp number phone contact person real human support help', a: 'You can reach us on WhatsApp at +1 (809) 431-0366 or email us at support@flashenter.com. Our team is available Monday to Friday.' },
+  { q: 'email address contact us support', a: 'You can email us at support@flashenter.com or WhatsApp us at +1 (809) 431-0366 for urgent help.' },
 ]
 
 const vaGuide = [
@@ -86,7 +88,7 @@ export default function Layout({ children, user, onLogout }) {
 
     const reply = match
       ? match.a
-      : 'I could not find a specific answer for that. Please email us at support@flashenter.com or WhatsApp us for urgent help!'
+      : 'I could not find a specific answer for that. You can reach us on WhatsApp at +1 (809) 431-0366 or email support@flashenter.com!'
 
     setTimeout(() => {
       setChatHistory(h => [...h, { role: 'assistant', text: reply }])
@@ -102,7 +104,6 @@ export default function Layout({ children, user, onLogout }) {
   return (
     <div style={{ background: '#F5F4F1', fontFamily: 'var(--font-sans)', minHeight: '100vh' }}>
 
-      {/* Help Panel */}
       {showHelp && (
         <div onClick={closeHelp} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, padding: 28, width: 580, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
@@ -131,8 +132,8 @@ export default function Layout({ children, user, onLogout }) {
                   { emoji: '👥', title: 'Client Portal Guide', desc: 'How clients use their portal to sign contracts and manage holidays.', action: () => setHelpSection('client-guide') },
                   { emoji: '💬', title: 'Ask a question', desc: 'Search our knowledge base for instant help.', action: () => setHelpSection('chat') },
                   { emoji: '🎥', title: 'Video Tutorials', desc: 'Coming soon — step-by-step video guides.', action: null },
-                  { emoji: '📧', title: 'Contact Support', desc: 'Email us at support@flashenter.com', action: () => { window.location.href = 'mailto:support@flashenter.com' } },
-                  { emoji: '📱', title: 'WhatsApp Support', desc: 'Message us on WhatsApp for urgent help.', action: () => { window.location.href = 'https://wa.me/18094310366' } },
+                  { emoji: '📧', title: 'Contact Support', desc: 'Email us at support@flashenter.com', action: () => { window.open('mailto:support@flashenter.com', '_self') } },
+                  { emoji: '📱', title: 'WhatsApp Support', desc: 'Message us on WhatsApp for urgent help.', action: () => { window.open('https://wa.me/18094310366', '_blank') } },
                 ].map(item => (
                   <div key={item.title} onClick={item.action || undefined}
                     style={{ padding: '12px 16px', background: '#F5F4F1', borderRadius: 12, cursor: item.action ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 12, border: item.action ? '0.5px solid rgba(83,74,183,0.2)' : 'none' }}>
@@ -233,7 +234,6 @@ export default function Layout({ children, user, onLogout }) {
         </div>
       )}
 
-      {/* Topbar */}
       <header style={{ background: '#fff', borderBottom: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ position: 'relative' }}>
           <button onClick={() => setShowUserMenu(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5F4F1', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 40, padding: '4px 12px 4px 4px', cursor: 'pointer' }}>
