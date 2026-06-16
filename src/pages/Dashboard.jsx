@@ -4,7 +4,7 @@ import { MetricCard, Card, SectionTitle, PageHeader, Tag, Avatar, Button } from 
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-export default function Dashboard() {
+() {export default function Dashboard
   const navigate = useNavigate()
   const [contacts, setContacts] = useState([])
   const [reminders, setReminders] = useState([])
