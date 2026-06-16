@@ -122,7 +122,7 @@ export default function Layout({ children, user, onLogout }) {
                   { emoji: '🔗', title: 'VA Portal Guide', desc: 'How VAs submit hours and sign contracts.', action: () => setHelpSection('va-guide') },
                   { emoji: '👥', title: 'Client Portal Guide', desc: 'How clients sign contracts and manage holidays.', action: () => setHelpSection('client-guide') },
                   { emoji: '💬', title: 'Ask a question', desc: 'Search our knowledge base for instant help.', action: () => setHelpSection('chat') },
-                  { emoji: '🎥', title: 'Video Tutorials', desc: 'Coming soon.', action: null },
+                  { emoji: '📋', title: 'Quick Start Guide', desc: 'Download our PDF guide to get started in minutes.', action: () => window.open('https://flashenter.com/quick-start', '_blank') },{ emoji: '🎥', title: 'Video Tutorials', desc: 'Coming soon.', action: null },
                   { emoji: '📧', title: 'Contact Support', desc: 'support@flashenter.com - click to copy!', action: () => { navigator.clipboard.writeText('support@flashenter.com'); alert('Email copied!') } },
                   { emoji: '📱', title: 'WhatsApp Support', desc: 'Message us on WhatsApp for urgent help.', action: () => window.open('https://wa.me/18094310366', '_blank') },
                 ].map(item => (
