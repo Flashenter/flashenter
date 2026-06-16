@@ -23,6 +23,16 @@ const navItems = [
   { icon: Mail, label: 'Inbox', path: '/inbox' },
 ]
 
+const helpItems = [
+  { emoji: '📋', title: 'Quick Start Guide', desc: 'Learn how to add clients, assign VAs, and run your first payroll in under 10 minutes.', link: null },
+  { emoji: '❓', title: 'FAQ', desc: 'Common questions about timesheets, contracts, portals and payroll.', link: null },
+  { emoji: '📧', title: 'Contact Support', desc: 'Click to email our support team directly.', link: 'mailto:support@flashenter.com' },
+  { emoji: '💬', title: 'WhatsApp Support', desc: 'Click to message us on WhatsApp for urgent help.', link: 'https://wa.me/18095550123' },
+  { emoji: '🎥', title: 'Video Tutorials', desc: 'Watch step-by-step guides for every feature. Coming soon!', link: null },
+  { emoji: '🔗', title: 'VA Portal Guide', desc: 'Share portal links with your VAs from the VA Pool page.', link: null },
+  { emoji: '👥', title: 'Client Portal Guide', desc: 'Share portal links with clients from the Clients page.', link: null },
+]
+
 export default function Layout({ children, user, onLogout }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -41,17 +51,15 @@ export default function Layout({ children, user, onLogout }) {
               <button onClick={() => setShowHelp(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#888780' }}>×</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {[
-                { emoji: '📋', title: 'Quick Start Guide', desc: 'Learn how to add clients, assign VAs, and run your first payroll in under 10 minutes.' },
-                { emoji: '❓', title: 'FAQ', desc: 'Common questions about timesheets, contracts, portals and payroll.' },
-                { emoji: '📧', title: 'Contact Support', desc: 'Email us at support@flashenter.com for help with your account.' },
-                { emoji: '🎥', title: 'Video Tutorials', desc: 'Watch step-by-step guides for every feature. Coming soon!' },
-                { emoji: '🔗', title: 'VA Portal', desc: 'Share portal links with your VAs from the VA Pool page.' },
-                { emoji: '👥', title: 'Client Portal', desc: 'Share portal links with clients from the Clients page using the Copy Portal Link button.' },
-              ].map(item => (
-                <div key={item.title} style={{ padding: '14px 16px', background: '#F5F4F1', borderRadius: 12 }}>
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>{item.emoji}</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+              {helpItems.map(item => (
+                <div key={item.title}
+                  onClick={() => item.link && window.open(item.link, '_blank')}
+                  style={{ padding: '14px 16px', background: '#F5F4F1', borderRadius: 12, cursor: item.link ? 'pointer' : 'default', border: item.link ? '0.5px solid #AFA9EC' : '0.5px solid transparent' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: 22 }}>{item.emoji}</div>
+                    {item.link && <span style={{ fontSize: 11, color: '#534AB7', fontWeight: 600 }}>Open →</span>}
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, marginTop: 6 }}>{item.title}</div>
                   <div style={{ fontSize: 13, color: '#5F5E5A', lineHeight: 1.5 }}>{item.desc}</div>
                 </div>
               ))}
@@ -62,6 +70,7 @@ export default function Layout({ children, user, onLogout }) {
 
       {/* Topbar */}
       <header style={{ background: '#fff', borderBottom: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
+
         {/* Left — user profile */}
         <div style={{ position: 'relative' }}>
           <button onClick={() => setShowUserMenu(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5F4F1', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 40, padding: '4px 12px 4px 4px', cursor: 'pointer' }}>
@@ -76,7 +85,8 @@ export default function Layout({ children, user, onLogout }) {
           {showUserMenu && (
             <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.08)', minWidth: 180, zIndex: 100, overflow: 'hidden' }}>
               {['Profile & settings', 'Switch workspace', 'Sign out'].map(item => (
-                <button key={item} onClick={() => { setShowUserMenu(false); if (item === 'Sign out') onLogout() }} style={{ width: '100%', padding: '10px 14px', fontSize: 12, color: item === 'Sign out' ? 'var(--red-600)' : '#1a1a18', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                <button key={item} onClick={() => { setShowUserMenu(false); if (item === 'Sign out') onLogout() }}
+                  style={{ width: '100%', padding: '10px 14px', fontSize: 12, color: item === 'Sign out' ? 'var(--red-600)' : '#1a1a18', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                   {item}
                 </button>
               ))}
@@ -120,8 +130,8 @@ export default function Layout({ children, user, onLogout }) {
             const Icon = item.icon
             return (
               <button key={item.path} onClick={() => navigate(item.path)}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', borderRadius: 50, border: 'none', cursor: 'pointer', background: active ? 'rgba(255,255,255,0.2)' : 'transparent', transition: 'background 0.15s' }}>
-                <Icon size={16} color="#fff" strokeWidth={active ? 2.2 : 1.8} />
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', borderRadius: 50, border: 'none', cursor: 'pointer', background: active ? 'rgba(255,255,255,0.2)' : 'transparent' }}>
+                <Icon size={16} color="#fff" strokeWidth={active ? 2.5 : 1.8} />
                 <span style={{ fontSize: 9, color: '#fff', fontFamily: 'var(--font-sans)', fontWeight: active ? 600 : 400, opacity: active ? 1 : 0.8 }}>{item.label}</span>
               </button>
             )
