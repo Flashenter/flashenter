@@ -15,7 +15,7 @@ import Timesheets from './pages/Timesheets'
 import Payroll from './pages/Payroll'
 import TeamMembers from './pages/TeamMembers'
 import Inbox from './pages/Inbox'
-import Invoices from './pages/Invoices'
+import Invoices from './pages/Invoices' import QuickStart from './pages/QuickStart'
 import { Leads, Deals, Markets, Settings } from './pages/Placeholders'
 import { supabase } from './lib/supabase'
 
@@ -116,7 +116,7 @@ export default function App() {
         <Route path="/va-portal/:id" element={<VAPortal />} />
         <Route path="/client-portal/:id" element={<ClientPortal />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />       <Route path="/quick-start" element={<QuickStart />} />
         <Route path="*" element={
           user ? (
             <Layout user={user} org={org} onLogout={handleLogout}>
