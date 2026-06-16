@@ -99,7 +99,7 @@ export default function Layout({ children, user, onLogout }) {
             fontSize: 12, color: '#888780',
           }}>
             <Search size={13} />
-            <span>Search...</span>
+            <span>Help</span>
             <span style={{ fontSize: 10, background: '#e8e7e4', padding: '1px 6px', borderRadius: 4, color: '#5F5E5A' }}>Help</span>          </div>
           <div style={{ position: 'relative' }}>
             <button style={{
