@@ -25,7 +25,7 @@ export default function Dashboard() {
   return (
     <div>
       <PageHeader
-        title="Good morning, James"
+        title={"Good morning, " + (user?.name?.split(' ')[0] || 'there')}
         subtitle="Tuesday Jun 3 · 7 active markets · Payroll due Wednesday 5:00pm">
         <Button variant="primary" icon={ArrowUpRight} onClick={() => navigate('/contacts')}>New client</Button>
       </PageHeader>
