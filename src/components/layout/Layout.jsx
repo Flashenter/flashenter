@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Users, Star, Briefcase, Clock, Wallet,
   FileText, Globe, Settings, BookUser, UserCheck, Bell, HelpCircle, Mail, ChevronDown, ChevronUp, Send
 } from 'lucide-react'
+import ChatWidget from './ChatWidget'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -278,6 +279,8 @@ export default function Layout({ children, user, onLogout }) {
       <main style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 24px 100px' }}>
         {children}
       </main>
+
+      <ChatWidget fromName={user?.name} fromType="admin" />
 
       <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
         <nav style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#534AB7', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: 60, padding: '5px 8px', boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}>
