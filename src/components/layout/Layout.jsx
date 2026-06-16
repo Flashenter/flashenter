@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Star, Briefcase, Clock, Wallet,
-  FileText, Globe, Settings, BookUser, UserCheck, Bell, HelpCircle, Mail
+  FileText, Globe, Settings, BookUser, UserCheck, Bell, HelpCircle, Mail, ChevronDown, ChevronUp, Send
 } from 'lucide-react'
 
 const navItems = [
@@ -23,14 +23,30 @@ const navItems = [
   { icon: Mail, label: 'Inbox', path: '/inbox' },
 ]
 
-const helpItems = [
-  { emoji: '📋', title: 'Quick Start Guide', desc: 'Learn how to add clients, assign VAs, and run your first payroll in under 10 minutes.', link: null },
-  { emoji: '❓', title: 'FAQ', desc: 'Common questions about timesheets, contracts, portals and payroll.', link: null },
-  { emoji: '📧', title: 'Contact Support', desc: 'Click to email our support team directly.', link: 'mailto:support@flashenter.com' },
-  { emoji: '💬', title: 'WhatsApp Support', desc: 'Click to message us on WhatsApp for urgent help.', link: 'https://wa.me/18095550123' },
-  { emoji: '🎥', title: 'Video Tutorials', desc: 'Watch step-by-step guides for every feature. Coming soon!', link: null },
-  { emoji: '🔗', title: 'VA Portal Guide', desc: 'Share portal links with your VAs from the VA Pool page.', link: null },
-  { emoji: '👥', title: 'Client Portal Guide', desc: 'Share portal links with clients from the Clients page.', link: null },
+const faqs = [
+  { q: 'How do I add a new client?', a: 'Go to Clients in the nav, click "Add client" button at the top right, fill in their details and click Save.' },
+  { q: 'How do I send a VA their portal link?', a: 'Go to VA Pool, find the VA card and click "Copy portal link". Send that link to your VA via email or WhatsApp.' },
+  { q: 'How do I approve a timesheet?', a: 'Go to Inbox, click the "VA Timesheets" tab. You will see all pending submissions. Click "Approve" on each one.' },
+  { q: 'How do I run payroll?', a: 'Go to Payroll, approve all pending records by clicking "Approve" on each row, then click the "Run payroll" button at the bottom.' },
+  { q: 'How do I get a client to sign their contract?', a: 'Go to Clients, click on the client, copy their portal link and send it to them. They go to the Contract tab and sign digitally.' },
+  { q: 'How do I add a team member?', a: 'Ask them to go to flashenter.com and sign in with Google. Then go to Team in the nav and click Approve next to their name.' },
+  { q: 'How do I create an invoice?', a: 'Go to Invoices in the nav, click "Create invoice", select the client, add line items and click "Send to client".' },
+  { q: 'How do I approve a holiday request?', a: 'Go to Inbox, click "Client Holidays" tab. You will see all pending holiday requests. Click Approve or Reject.' },
+]
+
+const vaGuide = [
+  { step: '1', title: 'Get your portal link', desc: 'Your admin will send you a unique link. Bookmark it — this is your personal portal.' },
+  { step: '2', title: 'Sign your contract', desc: 'Go to the Contract tab, read the agreement, then sign with your mouse or finger and click Sign.' },
+  { step: '3', title: 'Submit weekly hours', desc: 'Every Monday go to Submit Hours, fill in your week dates and hours, upload a screenshot if required, and click Submit.' },
+  { step: '4', title: 'Send messages', desc: 'Use the Messages tab to contact your admin about schedule changes, questions, or concerns.' },
+]
+
+const clientGuide = [
+  { step: '1', title: 'Get your portal link', desc: 'Your Flashenter admin will send you a unique portal link. Keep it safe — it is private to you.' },
+  { step: '2', title: 'Sign your agreement', desc: 'Go to the Contract tab, read your service agreement, sign digitally and click Sign Agreement.' },
+  { step: '3', title: 'Submit holiday dates', desc: 'Go to Holidays tab and add any days your VA should not work at least 2 weeks in advance.' },
+  { step: '4', title: 'Approve overtime', desc: 'If your VA needs to work extra hours, go to Approve OT, enter the hours and reason, and click Approve.' },
+  { step: '5', title: 'Send messages', desc: 'Use the Messages tab to contact your Flashenter admin with any questions or concerns.' },
 ]
 
 export default function Layout({ children, user, onLogout }) {
@@ -38,40 +54,193 @@ export default function Layout({ children, user, onLogout }) {
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [helpSection, setHelpSection] = useState('home')
+  const [openFaq, setOpenFaq] = useState(null)
+  const [chatMsg, setChatMsg] = useState('')
+  const [chatHistory, setChatHistory] = useState([])
+  const [chatLoading, setChatLoading] = useState(false)
+
+  async function sendChat() {
+    if (!chatMsg.trim()) return
+    const userMsg = chatMsg
+    setChatMsg('')
+    setChatHistory(h => [...h, { role: 'user', text: userMsg }])
+    setChatLoading(true)
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          system: 'You are a helpful support assistant for Flashenter, a VA management SaaS platform. Answer questions about how to use Flashenter features including: adding clients, VA pool management, timesheets, payroll, invoices, client portals, VA portals, contract signing, holiday management, inbox, and team management. Be concise and helpful. If you dont know something specific about Flashenter, suggest contacting support@flashenter.com.',
+          messages: [{ role: 'user', content: userMsg }]
+        })
+      })
+      const data = await response.json()
+      const reply = data.content?.[0]?.text || 'Sorry I could not get an answer. Please email support@flashenter.com'
+      setChatHistory(h => [...h, { role: 'assistant', text: reply }])
+    } catch {
+      setChatHistory(h => [...h, { role: 'assistant', text: 'Sorry something went wrong. Please email support@flashenter.com' }])
+    }
+    setChatLoading(false)
+  }
+
+  function closeHelp() {
+    setShowHelp(false)
+    setHelpSection('home')
+    setOpenFaq(null)
+  }
 
   return (
     <div style={{ background: '#F5F4F1', fontFamily: 'var(--font-sans)', minHeight: '100vh' }}>
 
       {/* Help Panel */}
       {showHelp && (
-        <div onClick={() => setShowHelp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, padding: 32, width: 560, maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-              <div style={{ fontSize: 18, fontWeight: 700 }}>Help Center</div>
-              <button onClick={() => setShowHelp(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#888780' }}>×</button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {helpItems.map(item => (
-                <div key={item.title}
-                  onClick={() => item.link && (window.location.href = item.link)}
-                  style={{ padding: '14px 16px', background: '#F5F4F1', borderRadius: 12, cursor: item.link ? 'pointer' : 'default', border: item.link ? '0.5px solid #AFA9EC' : '0.5px solid transparent' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ fontSize: 22 }}>{item.emoji}</div>
-                    {item.link && <span style={{ fontSize: 11, color: '#534AB7', fontWeight: 600 }}>Open →</span>}
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, marginTop: 6 }}>{item.title}</div>
-                  <div style={{ fontSize: 13, color: '#5F5E5A', lineHeight: 1.5 }}>{item.desc}</div>
+        <div onClick={closeHelp} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, padding: 28, width: 580, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {helpSection !== 'home' && (
+                  <button onClick={() => setHelpSection('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#888780' }}>←</button>
+                )}
+                <div style={{ fontSize: 17, fontWeight: 700 }}>
+                  {helpSection === 'home' && 'Help Center'}
+                  {helpSection === 'faq' && 'FAQ'}
+                  {helpSection === 'va-guide' && 'VA Portal Guide'}
+                  {helpSection === 'client-guide' && 'Client Portal Guide'}
+                  {helpSection === 'chat' && 'Ask a question'}
                 </div>
-              ))}
+              </div>
+              <button onClick={closeHelp} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#888780' }}>×</button>
             </div>
+
+            {/* Home */}
+            {helpSection === 'home' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { emoji: '📋', title: 'Quick Start Guide', desc: 'Download our PDF guide to get started in minutes.', action: () => window.open('https://flashenter.com/quick-start-guide.pdf', '_blank') },
+                  { emoji: '❓', title: 'FAQ', desc: 'Answers to the most common questions.', action: () => setHelpSection('faq') },
+                  { emoji: '🔗', title: 'VA Portal Guide', desc: 'How VAs use their portal to submit hours and sign contracts.', action: () => setHelpSection('va-guide') },
+                  { emoji: '👥', title: 'Client Portal Guide', desc: 'How clients use their portal to sign contracts and manage holidays.', action: () => setHelpSection('client-guide') },
+                  { emoji: '🎥', title: 'Video Tutorials', desc: 'Coming soon — step-by-step video guides.', action: null },
+                  { emoji: '💬', title: 'Ask a question', desc: 'Chat with our AI assistant for instant help.', action: () => setHelpSection('chat') },
+                  { emoji: '📧', title: 'Contact Support', desc: 'Email us at support@flashenter.com', action: () => window.location.href = 'mailto:support@flashenter.com' },
+                  { emoji: '📱', title: 'WhatsApp Support', desc: 'Message us on WhatsApp for urgent help.', action: () => window.location.href = 'https://wa.me/YOUR_NUMBER' },
+                ].map(item => (
+                  <div key={item.title} onClick={item.action || undefined}
+                    style={{ padding: '12px 16px', background: '#F5F4F1', borderRadius: 12, cursor: item.action ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 12, border: item.action ? '0.5px solid rgba(83,74,183,0.2)' : 'none' }}>
+                    <div style={{ fontSize: 24, flexShrink: 0 }}>{item.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{item.title}</div>
+                      <div style={{ fontSize: 12, color: '#5F5E5A' }}>{item.desc}</div>
+                    </div>
+                    {item.action && <div style={{ color: '#534AB7', fontSize: 16 }}>→</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* FAQ */}
+            {helpSection === 'faq' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {faqs.map((faq, i) => (
+                  <div key={i} style={{ borderRadius: 12, border: '0.5px solid rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+                    <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                      style={{ width: '100%', padding: '12px 16px', background: openFaq === i ? '#EEEDFE' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-sans)', textAlign: 'left' }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: openFaq === i ? '#534AB7' : '#1a1a18' }}>{faq.q}</span>
+                      {openFaq === i ? <ChevronUp size={14} color="#534AB7" /> : <ChevronDown size={14} color="#888780" />}
+                    </button>
+                    {openFaq === i && (
+                      <div style={{ padding: '12px 16px', background: '#fff', fontSize: 13, color: '#5F5E5A', lineHeight: 1.6 }}>
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div style={{ marginTop: 8, padding: '14px 16px', background: '#EEEDFE', borderRadius: 12, textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Can't find your answer?</div>
+                  <button onClick={() => setHelpSection('chat')} style={{ fontSize: 12, color: '#534AB7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
+                    Ask our AI assistant →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* VA Guide */}
+            {helpSection === 'va-guide' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {vaGuide.map(item => (
+                  <div key={item.step} style={{ display: 'flex', gap: 14, padding: '14px 16px', background: '#F5F4F1', borderRadius: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#534AB7', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{item.step}</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+                      <div style={{ fontSize: 13, color: '#5F5E5A', lineHeight: 1.5 }}>{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Client Guide */}
+            {helpSection === 'client-guide' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {clientGuide.map(item => (
+                  <div key={item.step} style={{ display: 'flex', gap: 14, padding: '14px 16px', background: '#F5F4F1', borderRadius: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#534AB7', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{item.step}</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+                      <div style={{ fontSize: 13, color: '#5F5E5A', lineHeight: 1.5 }}>{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Chat */}
+            {helpSection === 'chat' && (
+              <div>
+                <div style={{ minHeight: 200, maxHeight: 300, overflowY: 'auto', marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {chatHistory.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: 40, color: '#888780', fontSize: 13 }}>
+                      Ask me anything about Flashenter!
+                    </div>
+                  )}
+                  {chatHistory.map((msg, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                      <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 12, background: msg.role === 'user' ? '#534AB7' : '#F5F4F1', color: msg.role === 'user' ? '#fff' : '#1a1a18', fontSize: 13, lineHeight: 1.5 }}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                      <div style={{ padding: '10px 14px', borderRadius: 12, background: '#F5F4F1', fontSize: 13, color: '#888780' }}>Thinking...</div>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input value={chatMsg} onChange={e => setChatMsg(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && sendChat()}
+                    placeholder="Type your question..."
+                    style={{ flex: 1, padding: '10px 14px', borderRadius: 40, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+                  <button onClick={sendChat} disabled={chatLoading}
+                    style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: '#534AB7', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Send size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       )}
 
       {/* Topbar */}
       <header style={{ background: '#fff', borderBottom: '0.5px solid rgba(0,0,0,0.08)', padding: '10px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
-
-        {/* Left — user profile */}
         <div style={{ position: 'relative' }}>
           <button onClick={() => setShowUserMenu(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5F4F1', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 40, padding: '4px 12px 4px 4px', cursor: 'pointer' }}>
             <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--purple-50)', color: 'var(--purple-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600 }}>
@@ -84,7 +253,7 @@ export default function Layout({ children, user, onLogout }) {
           </button>
           {showUserMenu && (
             <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.08)', minWidth: 180, zIndex: 100, overflow: 'hidden' }}>
-              {['Profile & settings', 'Switch workspace', 'Sign out'].map(item => (
+              {['Profile & settings', 'Sign out'].map(item => (
                 <button key={item} onClick={() => { setShowUserMenu(false); if (item === 'Sign out') onLogout() }}
                   style={{ width: '100%', padding: '10px 14px', fontSize: 12, color: item === 'Sign out' ? 'var(--red-600)' : '#1a1a18', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                   {item}
@@ -94,12 +263,10 @@ export default function Layout({ children, user, onLogout }) {
           )}
         </div>
 
-        {/* Center — logo */}
         <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.3px' }}>
           <span style={{ color: 'var(--purple-600)' }}>Flash</span>enter
         </div>
 
-        {/* Right — help + bell */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button onClick={() => setShowHelp(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#F5F4F1', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 40, padding: '6px 14px', cursor: 'pointer', fontSize: 12, color: '#888780', fontFamily: 'var(--font-sans)' }}>
             <HelpCircle size={13} />
@@ -114,12 +281,10 @@ export default function Layout({ children, user, onLogout }) {
         </div>
       </header>
 
-      {/* Main content */}
       <main style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 24px 100px' }}>
         {children}
       </main>
 
-      {/* Floating bottom nav */}
       <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
         <nav style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#534AB7', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: 60, padding: '5px 8px', boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}>
           {navItems.map((item, i) => {
