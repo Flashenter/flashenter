@@ -71,7 +71,7 @@ export default function Layout({ children, user, onLogout }) {
             }}>
               {['Profile & settings', 'Switch workspace', 'Sign out'].map(item => (
                 <div key={item} onClick={() => setShowUserMenu(false)} style={{
-                  padding: '8px 12px', fontSize: 12, color: '#444441',
+                  padding: '8px 12px', fontSize: 12, color: '#fff',
                   borderRadius: 8, cursor: 'pointer',
                 }}
                   onMouseEnter={e => e.currentTarget.style.background = '#F5F4F1'}
@@ -99,8 +99,7 @@ export default function Layout({ children, user, onLogout }) {
           }}>
             <Search size={13} />
             <span>Search...</span>
-            <span style={{ fontSize: 10, background: '#e8e7e4', padding: '1px 6px', borderRadius: 4, color: '#5F5E5A' }}>⌘K</span>
-          </div>
+            <span style={{ fontSize: 10, background: '#e8e7e4', padding: '1px 6px', borderRadius: 4, color: '#5F5E5A' }}>⌘K</span>          </div>
           <div style={{ position: 'relative' }}>
             <button style={{
               width: 34, height: 34, borderRadius: '50%',
@@ -147,7 +146,7 @@ export default function Layout({ children, user, onLogout }) {
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                   padding: '7px 11px', borderRadius: 50, cursor: 'pointer', border: 'none',
-                  background: active ? 'var(--purple-50)' : 'transparent',
+                  background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
                   minWidth: 50, position: 'relative',
                   transition: 'background 0.15s',
                 }}
@@ -165,7 +164,7 @@ export default function Layout({ children, user, onLogout }) {
                 </div>
                 <span style={{
                   fontSize: 9, whiteSpace: 'nowrap',
-                  color: active ? 'var(--purple-600)' : '#888780',
+                  color: active ? '#fff' : 'rgba(255,255,255,0.7)',
                   fontWeight: active ? 600 : 400,
                 }}>
                   {item.label}
