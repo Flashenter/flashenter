@@ -34,6 +34,20 @@ const faqs = [
   { q: 'How do I approve a holiday request?', a: 'Go to Inbox, click "Client Holidays" tab. You will see all pending holiday requests. Click Approve or Reject.' },
 ]
 
+const allQA = [
+  ...faqs,
+  { q: 'portal link va virtual assistant', a: 'Go to VA Pool, find the VA card and click "Copy portal link". Send that link to your VA.' },
+  { q: 'portal link client', a: 'Go to Clients, click on the client card, and click "Copy portal link" button.' },
+  { q: 'invoice billing payment', a: 'Go to Invoices in the nav, click "Create invoice", select the client, add line items and send.' },
+  { q: 'notification email alert', a: 'Email notifications are sent to your admin email when VAs submit timesheets, sign contracts, or send messages.' },
+  { q: 'approve team member access login', a: 'Go to Team in the nav and click Approve next to the person waiting for access.' },
+  { q: 'holiday vacation time off', a: 'Clients can submit holidays through their client portal. You can approve or reject them in Inbox under Client Holidays.' },
+  { q: 'overtime ot extra hours', a: 'Clients approve overtime through their client portal under the Approve OT tab. It then appears in your Inbox.' },
+  { q: 'contract sign agreement', a: 'Send the portal link to your client or VA. They go to the Contract tab and sign digitally with their mouse or finger.' },
+  { q: 'password login sign in access', a: 'Flashenter uses Google sign in. Go to flashenter.com and click "Continue with Google" to log in.' },
+  { q: 'market country region', a: 'Go to Markets in the nav to see performance across all your active countries including DR, South Africa, Philippines, Colombia and Panama.' },
+]
+
 const vaGuide = [
   { step: '1', title: 'Get your portal link', desc: 'Your admin will send you a unique link. Bookmark it — this is your personal portal.' },
   { step: '2', title: 'Sign your contract', desc: 'Go to the Contract tab, read the agreement, then sign with your mouse or finger and click Sign.' },
@@ -58,33 +72,25 @@ export default function Layout({ children, user, onLogout }) {
   const [openFaq, setOpenFaq] = useState(null)
   const [chatMsg, setChatMsg] = useState('')
   const [chatHistory, setChatHistory] = useState([])
-  const [chatLoading, setChatLoading] = useState(false)
 
-  async function sendChat() {
+  function sendChat() {
     if (!chatMsg.trim()) return
     const userMsg = chatMsg
     setChatMsg('')
     setChatHistory(h => [...h, { role: 'user', text: userMsg }])
-    setChatLoading(true)
 
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          system: 'You are a helpful support assistant for Flashenter, a VA management SaaS platform. Answer questions about how to use Flashenter features including: adding clients, VA pool management, timesheets, payroll, invoices, client portals, VA portals, contract signing, holiday management, inbox, and team management. Be concise and helpful. If you dont know something specific about Flashenter, suggest contacting support@flashenter.com.',
-          messages: [{ role: 'user', content: userMsg }]
-        })
-      })
-      const data = await response.json()
-      const reply = data.content?.[0]?.text || 'Sorry I could not get an answer. Please email support@flashenter.com'
+    const lower = userMsg.toLowerCase()
+    const match = allQA.find(item =>
+      item.q.toLowerCase().split(' ').some(word => word.length > 3 && lower.includes(word))
+    )
+
+    const reply = match
+      ? match.a
+      : 'I could not find a specific answer for that. Please email us at support@flashenter.com or WhatsApp us for urgent help!'
+
+    setTimeout(() => {
       setChatHistory(h => [...h, { role: 'assistant', text: reply }])
-    } catch {
-      setChatHistory(h => [...h, { role: 'assistant', text: 'Sorry something went wrong. Please email support@flashenter.com' }])
-    }
-    setChatLoading(false)
+    }, 400)
   }
 
   function closeHelp() {
@@ -101,7 +107,6 @@ export default function Layout({ children, user, onLogout }) {
         <div onClick={closeHelp} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, padding: 28, width: 580, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
 
-            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {helpSection !== 'home' && (
@@ -118,18 +123,16 @@ export default function Layout({ children, user, onLogout }) {
               <button onClick={closeHelp} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#888780' }}>×</button>
             </div>
 
-            {/* Home */}
             {helpSection === 'home' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { emoji: '📋', title: 'Quick Start Guide', desc: 'Download our PDF guide to get started in minutes.', action: () => window.open('https://flashenter.com/quick-start-guide.pdf', '_blank') },
                   { emoji: '❓', title: 'FAQ', desc: 'Answers to the most common questions.', action: () => setHelpSection('faq') },
                   { emoji: '🔗', title: 'VA Portal Guide', desc: 'How VAs use their portal to submit hours and sign contracts.', action: () => setHelpSection('va-guide') },
                   { emoji: '👥', title: 'Client Portal Guide', desc: 'How clients use their portal to sign contracts and manage holidays.', action: () => setHelpSection('client-guide') },
+                  { emoji: '💬', title: 'Ask a question', desc: 'Search our knowledge base for instant help.', action: () => setHelpSection('chat') },
                   { emoji: '🎥', title: 'Video Tutorials', desc: 'Coming soon — step-by-step video guides.', action: null },
-                  { emoji: '💬', title: 'Ask a question', desc: 'Chat with our AI assistant for instant help.', action: () => setHelpSection('chat') },
-                  { emoji: '📧', title: 'Contact Support', desc: 'Email us at support@flashenter.com', action: () => window.location.href = 'mailto:support@flashenter.com' },
-                  { emoji: '📱', title: 'WhatsApp Support', desc: 'Message us on WhatsApp for urgent help.', action: () => window.location.href = 'https://wa.me/YOUR_NUMBER' },
+                  { emoji: '📧', title: 'Contact Support', desc: 'Email us at support@flashenter.com', action: () => { window.location.href = 'mailto:support@flashenter.com' } },
+                  { emoji: '📱', title: 'WhatsApp Support', desc: 'Message us on WhatsApp for urgent help.', action: () => { window.location.href = 'https://wa.me/18094310366' } },
                 ].map(item => (
                   <div key={item.title} onClick={item.action || undefined}
                     style={{ padding: '12px 16px', background: '#F5F4F1', borderRadius: 12, cursor: item.action ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 12, border: item.action ? '0.5px solid rgba(83,74,183,0.2)' : 'none' }}>
@@ -144,7 +147,6 @@ export default function Layout({ children, user, onLogout }) {
               </div>
             )}
 
-            {/* FAQ */}
             {helpSection === 'faq' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {faqs.map((faq, i) => (
@@ -162,15 +164,14 @@ export default function Layout({ children, user, onLogout }) {
                   </div>
                 ))}
                 <div style={{ marginTop: 8, padding: '14px 16px', background: '#EEEDFE', borderRadius: 12, textAlign: 'center' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Can't find your answer?</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Still have questions?</div>
                   <button onClick={() => setHelpSection('chat')} style={{ fontSize: 12, color: '#534AB7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
-                    Ask our AI assistant →
+                    Search our knowledge base →
                   </button>
                 </div>
               </div>
             )}
 
-            {/* VA Guide */}
             {helpSection === 'va-guide' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {vaGuide.map(item => (
@@ -185,7 +186,6 @@ export default function Layout({ children, user, onLogout }) {
               </div>
             )}
 
-            {/* Client Guide */}
             {helpSection === 'client-guide' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {clientGuide.map(item => (
@@ -200,13 +200,12 @@ export default function Layout({ children, user, onLogout }) {
               </div>
             )}
 
-            {/* Chat */}
             {helpSection === 'chat' && (
               <div>
                 <div style={{ minHeight: 200, maxHeight: 300, overflowY: 'auto', marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {chatHistory.length === 0 && (
                     <div style={{ textAlign: 'center', padding: 40, color: '#888780', fontSize: 13 }}>
-                      Ask me anything about Flashenter!
+                      Type a question and I will search our knowledge base for you!
                     </div>
                   )}
                   {chatHistory.map((msg, i) => (
@@ -216,18 +215,13 @@ export default function Layout({ children, user, onLogout }) {
                       </div>
                     </div>
                   ))}
-                  {chatLoading && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                      <div style={{ padding: '10px 14px', borderRadius: 12, background: '#F5F4F1', fontSize: 13, color: '#888780' }}>Thinking...</div>
-                    </div>
-                  )}
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input value={chatMsg} onChange={e => setChatMsg(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && sendChat()}
-                    placeholder="Type your question..."
+                    placeholder="e.g. How do I approve a timesheet?"
                     style={{ flex: 1, padding: '10px 14px', borderRadius: 40, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
-                  <button onClick={sendChat} disabled={chatLoading}
+                  <button onClick={sendChat}
                     style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: '#534AB7', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Send size={14} />
                   </button>
