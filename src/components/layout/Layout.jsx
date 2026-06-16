@@ -24,6 +24,7 @@ export default function Layout({ children, user, onLogout }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#F5F4F1', fontFamily: 'var(--font-sans)' }}>
@@ -99,7 +100,7 @@ export default function Layout({ children, user, onLogout }) {
           }}>
             <Search size={13} />
             <span>Search...</span>
-            <span style={{ fontSize: 10, background: '#e8e7e4', padding: '1px 6px', borderRadius: 4, color: '#5F5E5A' }}>⌘K</span>          </div>
+            <span style={{ fontSize: 10, background: '#e8e7e4', padding: '1px 6px', borderRadius: 4, color: '#5F5E5A' }}>Help</span>          </div>
           <div style={{ position: 'relative' }}>
             <button style={{
               width: 34, height: 34, borderRadius: '50%',
@@ -146,13 +147,13 @@ export default function Layout({ children, user, onLogout }) {
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                   padding: '7px 11px', borderRadius: 50, cursor: 'pointer', border: 'none',
-                  background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  background: active ? 'var(--purple-50)' : 'transparent',
                   minWidth: 50, position: 'relative',
                   transition: 'background 0.15s',
                 }}
               >
                 <div style={{ position: 'relative' }}>
-                  <Icon size={16} color='#fff' strokeWidth={active ? 2.2 : 1.8} />
+                  <Icon size={16} color={active ? 'var(--purple-600)' : '#888780'} strokeWidth={active ? 2.2 : 1.8} />
                   {(item.badge || item.urgent || item.alert) && (
                     <span style={{
                       position: 'absolute', top: -3, right: -3,
@@ -164,7 +165,7 @@ export default function Layout({ children, user, onLogout }) {
                 </div>
                 <span style={{
                   fontSize: 9, whiteSpace: 'nowrap',
-                  color: '#fff',
+                  color: active ? 'var(--purple-600)' : '#888780',
                   fontWeight: active ? 600 : 400,
                 }}>
                   {item.label}
