@@ -152,7 +152,7 @@ export default function Layout({ children, user, onLogout }) {
                 }}
               >
                 <div style={{ position: 'relative' }}>
-                  <Icon size={16} color={active ? 'var(--purple-600)' : '#888780'} strokeWidth={active ? 2.2 : 1.8} />
+                  <Icon size={16} color='#fff' strokeWidth={active ? 2.2 : 1.8} />
                   {(item.badge || item.urgent || item.alert) && (
                     <span style={{
                       position: 'absolute', top: -3, right: -3,
