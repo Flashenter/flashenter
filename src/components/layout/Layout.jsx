@@ -53,7 +53,7 @@ export default function Layout({ children, user, onLogout }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {helpItems.map(item => (
                 <div key={item.title}
-                  onClick={() => item.link && window.open(item.link, '_blank')}
+                  onClick={() => item.link && (window.location.href = item.link)}
                   style={{ padding: '14px 16px', background: '#F5F4F1', borderRadius: 12, cursor: item.link ? 'pointer' : 'default', border: item.link ? '0.5px solid #AFA9EC' : '0.5px solid transparent' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ fontSize: 22 }}>{item.emoji}</div>
