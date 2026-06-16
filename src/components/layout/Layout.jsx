@@ -164,7 +164,7 @@ export default function Layout({ children, user, onLogout }) {
                 </div>
                 <span style={{
                   fontSize: 9, whiteSpace: 'nowrap',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.7)',
+                  color: '#fff',
                   fontWeight: active ? 600 : 400,
                 }}>
                   {item.label}
