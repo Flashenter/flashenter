@@ -1,0 +1,5 @@
+const fs = require('fs')
+let c = fs.readFileSync('src/App.jsx', 'utf8')
+const lines = c.split('\n')
+console.log('Line 17:', lines[17])
+console.log('Line 18:', lines[18])
