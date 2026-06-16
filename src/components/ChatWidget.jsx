@@ -6,31 +6,37 @@ const knowledgeBase = [
   { q: 'wait waiting long how long response time', a: 'Our typical response time is between 4-6 minutes during business hours. If urgent, call us at +1 (862) 414-4734.' },
   { q: 'hours business open available when', a: 'We are available Monday to Friday, 9:00am to 11:00pm Eastern Time. For urgent matters WhatsApp us at +1 (809) 431-0366.' },
   { q: 'price cost plan subscription pricing upgrade', a: 'Our plans vary! Please visit flashenter.com/signup to see all available plans and pricing. You can upgrade anytime!' },
-  { q: 'whatsapp number phone contact person real human support help', a: 'You can reach us on WhatsApp at +1 (809) 431-0366 or email us at support@flashenter.com. We are available Monday to Friday 9am-11pm EST.' },
-  { q: 'email address contact us support', a: 'You can email us at support@flashenter.com or WhatsApp us at +1 (809) 431-0366 for urgent help.' },
-  { q: 'cancel subscription account', a: 'To cancel your subscription please email support@flashenter.com or WhatsApp us at +1 (809) 431-0366 and we will help you right away.' },
+  { q: 'whatsapp number phone contact support help', a: 'You can reach us on WhatsApp at +1 (809) 431-0366 or email support@flashenter.com. Available Mon-Fri 9am-11pm EST.' },
+  { q: 'email address contact us', a: 'You can email us at support@flashenter.com or WhatsApp us at +1 (809) 431-0366 for urgent help.' },
+  { q: 'cancel subscription account', a: 'To cancel your subscription please email support@flashenter.com or WhatsApp us and we will help you right away.' },
   { q: 'refund money back', a: 'We offer a 7-day free trial. For refund requests please contact support@flashenter.com within 7 days of your payment.' },
-  { q: 'problem error not working bug', a: 'Sorry to hear that! Please describe the issue and email support@flashenter.com or WhatsApp us at +1 (809) 431-0366 and we will fix it asap.' },
-  { q: 'portal link va virtual assistant', a: 'Go to VA Pool, find the VA card and click "Copy portal link". Send that link to your VA.' },
-  { q: 'portal link client', a: 'Go to Clients, click on the client card, and click "Copy portal link" button.' },
-  { q: 'invoice billing payment', a: 'Go to Invoices in the nav, click "Create invoice", select the client, add line items and send.' },
-  { q: 'approve timesheet hours', a: 'Go to Inbox, click the "VA Timesheets" tab and click Approve on each submission.' },
-  { q: 'payroll run pay', a: 'Go to Payroll, approve all pending records, then click the "Run payroll" button at the bottom.' },
+  { q: 'problem error not working bug', a: 'Sorry to hear that! Please email support@flashenter.com or WhatsApp us at +1 (809) 431-0366 and we will fix it asap.' },
+  { q: 'portal link va virtual assistant', a: 'Go to VA Pool, find the VA card and click Copy portal link. Send that link to your VA.' },
+  { q: 'portal link client', a: 'Go to Clients, click on the client card, and click Copy portal link button.' },
+  { q: 'invoice billing payment', a: 'Go to Invoices in the nav, click Create invoice, select the client, add line items and send.' },
+  { q: 'approve timesheet hours', a: 'Go to Inbox, click the VA Timesheets tab and click Approve on each submission.' },
+  { q: 'payroll run pay', a: 'Go to Payroll, approve all pending records, then click the Run payroll button at the bottom.' },
   { q: 'contract sign agreement', a: 'Send the portal link to your client or VA. They go to the Contract tab and sign digitally.' },
-  { q: 'add client new contact', a: 'Go to Clients in the nav, click "Add client", fill in their details and click Save.' },
+  { q: 'add client new contact', a: 'Go to Clients in the nav, click Add client, fill in their details and click Save.' },
   { q: 'team member approve access login', a: 'Go to Team in the nav and click Approve next to the person waiting for access.' },
   { q: 'holiday vacation time off', a: 'Clients submit holidays through their client portal. You can approve or reject them in Inbox under Client Holidays.' },
   { q: 'overtime ot extra hours', a: 'Clients approve overtime through their client portal under the Approve OT tab.' },
 ]
 
+const LIVE_AGENT_KEYWORDS = ['live agent', 'real person', 'speak to someone', 'talk to someone', 'human', 'agent', 'representative', 'hold', 'wait', 'person']
+
+const LIVE_AGENT_REPLY = 'No problem! Please hold for approximately 3-5 minutes and someone will be right with you. You can also call us directly at +1 (862) 414-4734. 😊'
+
 const HOLD_MESSAGE = "Hi! Thanks for reaching out to Flashenter. We're currently attending another client — please hold one moment or call us directly at +1 (862) 414-4734. We'll be right with you! 😊"
 
 function findAnswer(text) {
   const lower = text.toLowerCase()
+  const isLiveAgent = LIVE_AGENT_KEYWORDS.some(kw => lower.includes(kw))
+  if (isLiveAgent) return { text: LIVE_AGENT_REPLY, urgent: true }
   const match = knowledgeBase.find(item =>
     item.q.toLowerCase().split(' ').some(word => word.length > 2 && lower.includes(word))
   )
-  return match ? match.a : null
+  return match ? { text: match.a, urgent: false } : null
 }
 
 export default function ChatWidget({ fromName, fromType, contactId, vaId }) {
@@ -38,6 +44,7 @@ export default function ChatWidget({ fromName, fromType, contactId, vaId }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [hasAutoReplied, setHasAutoReplied] = useState(false)
   const bottomRef = useRef(null)
 
   function scrollToBottom() {
@@ -52,18 +59,33 @@ export default function ChatWidget({ fromName, fromType, contactId, vaId }) {
 
     setMessages(h => [...h, { id: Date.now(), text, from: 'user' }])
 
+    const answer = findAnswer(text)
+
     await supabase.from('messages').insert([{
       from_name: fromName || 'Visitor',
       from_type: fromType || 'client',
       to_name: 'Flashenter Admin',
-      subject: 'Live chat message',
+      subject: answer?.urgent ? '🚨 URGENT - Live agent requested' : 'Live chat message',
       body: text,
       contact_id: contactId || null,
       va_id: vaId || null,
     }])
 
-    const answer = findAnswer(text)
-    const reply = answer || HOLD_MESSAGE
+    if (answer?.urgent) {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: 'info@nexbridgeva.com',
+          subject: '🚨 URGENT - Live agent requested on Flashenter chat',
+          html: '<div style="font-family:sans-serif;padding:20px"><h2>Live Agent Requested</h2><p><strong>From:</strong> ' + (fromName || 'Visitor') + '</p><p><strong>Message:</strong> ' + text + '</p><p>Please respond within 3-5 minutes!</p></div>'
+        })
+      })
+    }
+
+    const reply = answer ? answer.text : (!hasAutoReplied ? HOLD_MESSAGE : 'Is there anything else I can help you with? You can also call us at +1 (862) 414-4734.')
+
+    if (!hasAutoReplied && !answer) setHasAutoReplied(true)
 
     setTimeout(() => {
       setMessages(h => [...h, { id: Date.now() + 1, text: reply, from: 'bot' }])
@@ -99,7 +121,7 @@ export default function ChatWidget({ fromName, fromType, contactId, vaId }) {
               <div style={{ textAlign: 'center', padding: '20px 10px' }}>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>👋</div>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Hi there!</div>
-                <div style={{ fontSize: 12, color: '#888780', lineHeight: 1.5 }}>How can we help you today? Type your question below!</div>
+                <div style={{ fontSize: 12, color: '#888780', lineHeight: 1.5 }}>How can we help you today? Type your question or ask to speak to a live agent!</div>
               </div>
             )}
             {messages.map(msg => (
