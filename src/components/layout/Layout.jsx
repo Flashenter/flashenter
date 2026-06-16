@@ -48,7 +48,7 @@ const allQA = [
   { q: 'password login sign in access', a: 'Flashenter uses Google sign in. Go to flashenter.com and click "Continue with Google" to log in.' },
   { q: 'market country region', a: 'Go to Markets in the nav to see performance across all your active countries including DR, South Africa, Philippines, Colombia and Panama.' },
   { q: 'whatsapp number phone contact person real human support help', a: 'You can reach us on WhatsApp at +1 (809) 431-0366 or email us at support@flashenter.com. Our team is available Monday to Friday.' },
-  { q: 'email address contact us support', a: 'You can email us at support@flashenter.com or WhatsApp us at +1 (809) 431-0366 for urgent help.' }, { q: 'wait waiting long response time', a: 'Our typical response time is under 5 minutes during business hours (Monday to Friday, 9am-6pm EST). If urgent, call us at +1 (862) 414-4734 or WhatsApp +1 (809) 431-0366.' }, { q: 'hours business open available', a: 'We are available Monday to Friday, 9am to 6pm EST. For urgent matters outside business hours, WhatsApp us at +1 (809) 431-0366.' }, { q: 'price cost plan subscription', a: 'Our plans start free! Starter is $39.99/mo, Pro is $89.99/mo, and Elite is $189.99/mo. Visit flashenter.com/signup to get started.' }, { q: 'cancel subscription account', a: 'To cancel your subscription please email support@flashenter.com or WhatsApp us at +1 (809) 431-0366 and we will help you right away.' }, { q: 'refund money back', a: 'We offer a 7-day free trial. For refund requests please contact support@flashenter.com within 7 days of your payment.' }, { q: 'problem error not working bug', a: 'Sorry to hear that! Please describe the issue and email support@flashenter.com or WhatsApp us at +1 (809) 431-0366 and we will fix it asap.' },
+  { q: 'email address contact us support', a: 'You can email us at support@flashenter.com or WhatsApp us at +1 (809) 431-0366 for urgent help.' }, { q: 'wait waiting long how long response time', a: 'Our typical response time is between 4-6 minutes during business hours. If urgent, call us at +1 (862) 414-4734.' }, { q: 'hours business open available when', a: 'We are available Monday to Friday, 9:00am to 11:00pm Eastern Time. For urgent matters WhatsApp us at +1 (809) 431-0366.' } { q: 'price cost plan subscription pricing upgrade', a: 'Our plans vary! Please visit flashenter.com/signup to see all available plans and pricing. You can upgrade anytime!' }, { q: 'cancel subscription account', a: 'To cancel your subscription please email support@flashenter.com or WhatsApp us at +1 (809) 431-0366 and we will help you right away.' }, { q: 'refund money back', a: 'We offer a 7-day free trial. For refund requests please contact support@flashenter.com within 7 days of your payment.' }, { q: 'problem error not working bug', a: 'Sorry to hear that! Please describe the issue and email support@flashenter.com or WhatsApp us at +1 (809) 431-0366 and we will fix it asap.' },
 ]
 
 const vaGuide = [
@@ -84,7 +84,7 @@ export default function Layout({ children, user, onLogout }) {
 
     const lower = userMsg.toLowerCase()
     const match = allQA.find(item =>
-      item.q.toLowerCase().split(' ').some(word => word.length > 3 && lower.includes(word))
+      item.q.toLowerCase().split(' ').some(word => word.length > 2 && lower.includes(word))
     )
 
     const reply = match
