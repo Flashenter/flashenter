@@ -132,7 +132,7 @@ export default function Layout({ children, user, onLogout }) {
                   { emoji: '👥', title: 'Client Portal Guide', desc: 'How clients use their portal to sign contracts and manage holidays.', action: () => setHelpSection('client-guide') },
                   { emoji: '💬', title: 'Ask a question', desc: 'Search our knowledge base for instant help.', action: () => setHelpSection('chat') },
                   { emoji: '🎥', title: 'Video Tutorials', desc: 'Coming soon — step-by-step video guides.', action: null },
-                  { emoji: '📧', title: 'Contact Support', desc: 'Email us at support@flashenter.com', action: () => { window.open('mailto:support@flashenter.com', '_self') } },
+                  { emoji: '📧', title: 'Contact Support', desc: 'support@flashenter.com — click to copy!', action: () => { navigator.clipboard.writeText('support@flashenter.com'); alert('Email copied!') } },
                   { emoji: '📱', title: 'WhatsApp Support', desc: 'Message us on WhatsApp for urgent help.', action: () => { window.open('https://wa.me/18094310366', '_blank') } },
                 ].map(item => (
                   <div key={item.title} onClick={item.action || undefined}
