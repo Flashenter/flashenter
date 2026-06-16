@@ -65,7 +65,7 @@ export default function Layout({ children, user, onLogout }) {
           {showUserMenu && (
             <div className="animate-slide-down" style={{
               position: 'absolute', top: 'calc(100% + 8px)', left: 0,
-              background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)',
+             background: '#534AB7', border: '0.5px solid rgba(0,0,0,0.1)',
               borderRadius: 12, padding: '6px', minWidth: 180,
               boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
             }}>
@@ -130,7 +130,7 @@ export default function Layout({ children, user, onLogout }) {
       }}>
         <nav style={{
           display: 'flex', alignItems: 'center', gap: 2,
-          background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)',
+         background: '#534AB7', border: '0.5px solid rgba(0,0,0,0.1)',
           borderRadius: 60, padding: '5px 8px',
           boxShadow: '0 4px 24px rgba(0,0,0,0.09)',
         }}>
