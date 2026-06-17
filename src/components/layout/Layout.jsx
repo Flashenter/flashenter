@@ -5,6 +5,8 @@ import {
   FileText, Globe, Settings, BookUser, UserCheck, Bell, HelpCircle, Mail, ChevronDown, ChevronUp, Send
 } from 'lucide-react'
 import ChatWidget from '../ChatWidget'
+import { useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -21,7 +23,7 @@ const navItems = [
   { icon: Globe, label: 'Markets', path: '/markets' },
   { icon: Settings, label: 'Settings', path: '/settings' },
   { icon: Users, label: 'Team', path: '/team' },
-  { icon: Mail, label: 'Inbox', path: '/inbox' },
+  { icon: Mail, label: 'Inbox', path: '/inbox', badge: true },
 ]
 
 const faqs = [
@@ -72,6 +74,18 @@ export default function Layout({ children, user, onLogout }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchUnread() {
+      const { count: msgCount } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('read', false)
+      const { count: subCount } = await supabase.from('va_submissions').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+      setUnreadCount((msgCount || 0) + (subCount || 0))
+    }
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => clearInterval(interval)
+  }, [])
   const [showHelp, setShowHelp] = useState(false)
   const [helpSection, setHelpSection] = useState('home')
   const [openFaq, setOpenFaq] = useState(null)
@@ -243,7 +257,12 @@ export default function Layout({ children, user, onLogout }) {
             const Icon = item.icon
             return (
               <button key={item.path} onClick={() => navigate(item.path)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', borderRadius: 50, border: 'none', cursor: 'pointer', background: active ? 'rgba(255,255,255,0.2)' : 'transparent' }}>
+                <div style={{ position: 'relative' }}>
                 <Icon size={16} color='#fff' strokeWidth={active ? 2.5 : 1.8} />
+                {item.badge && unreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: -4, right: -4, width: 8, height: 8, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #534AB7' }} />
+                )}
+              </div>
                 <span style={{ fontSize: 9, color: '#fff', fontFamily: 'var(--font-sans)', fontWeight: active ? 600 : 400, opacity: active ? 1 : 0.8 }}>{item.label}</span>
               </button>
             )
