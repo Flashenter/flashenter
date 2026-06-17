@@ -24,7 +24,6 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [org, setOrg] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [pendingApproval, setPendingApproval] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -48,19 +47,27 @@ export default function App() {
       .single()
 
     if (!member) {
-      await supabase.from('team_members').insert([{
+      const { data: newMember } = await supabase.from('team_members').insert([{
         email: authUser.email,
         name: authUser.user_metadata?.full_name || authUser.email,
         avatar_url: authUser.user_metadata?.avatar_url,
-        approved: false
-      }])
-      setPendingApproval(true)
-      setLoading(false)
-      return
-    }
+        approved: true,
+        role: 'admin'
+      }]).select().single()
 
-    if (!member.approved) {
-      setPendingApproval(true)
+      const { data: newOrg } = await supabase.from('organizations').insert([{
+        name: authUser.user_metadata?.full_name ? authUser.user_metadata.full_name + "'s Workspace" : 'My Workspace',
+        email: authUser.email,
+        owner_email: authUser.email,
+        plan: 'basic',
+        status: 'active'
+      }]).select().single()
+
+      if (newOrg && newMember) {
+        await supabase.from('team_members').update({ org_id: newOrg.id }).eq('id', newMember.id)
+        setUser({ name: newMember.name, email: newMember.email, role: 'admin', avatar: newMember.avatar_url })
+        setOrg(newOrg)
+      }
       setLoading(false)
       return
     }
@@ -76,12 +83,27 @@ export default function App() {
       orgData = data
       if (orgData) {
         await supabase.from('team_members').update({ org_id: orgData.id }).eq('email', authUser.email)
+      } else {
+        const { data: newOrg } = await supabase.from('organizations').insert([{
+          name: member.name ? member.name + "'s Workspace" : 'My Workspace',
+          email: authUser.email,
+          owner_email: authUser.email,
+          plan: 'basic',
+          status: 'active'
+        }]).select().single()
+        orgData = newOrg
+        if (newOrg) {
+          await supabase.from('team_members').update({ org_id: newOrg.id, approved: true }).eq('email', authUser.email)
+        }
       }
+    }
+
+    if (!member.approved) {
+      await supabase.from('team_members').update({ approved: true }).eq('email', authUser.email)
     }
 
     setUser({ name: member.name, email: member.email, role: member.role, avatar: member.avatar_url })
     setOrg(orgData)
-    setPendingApproval(false)
     setLoading(false)
   }
 
@@ -97,18 +119,6 @@ export default function App() {
     </div>
   )
 
-  if (pendingApproval) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F4F1' }}>
-      <div style={{ width: 380, background: '#fff', borderRadius: 20, padding: 40, boxShadow: '0 4px 40px rgba(0,0,0,0.08)', textAlign: 'center' }}>
-        <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
-        <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}><span style={{ color: '#534AB7' }}>Flash</span>enter</div>
-        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Awaiting approval</div>
-        <div style={{ fontSize: 13, color: '#888780', lineHeight: 1.6, marginBottom: 24 }}>Your account has been registered. An admin needs to approve your access before you can log in.</div>
-        <button onClick={handleLogout} style={{ padding: '10px 24px', borderRadius: 40, border: '0.5px solid rgba(0,0,0,0.1)', background: '#F5F4F1', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>Sign out</button>
-      </div>
-    </div>
-  )
-
   const sharedProps = { org, user }
 
   return (
@@ -117,7 +127,8 @@ export default function App() {
         <Route path="/va-portal/:id" element={<VAPortal />} />
         <Route path="/client-portal/:id" element={<ClientPortal />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />       <Route path="/quick-start" element={<QuickStart />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/quick-start" element={<QuickStart />} />
         <Route path="*" element={
           user ? (
             <Layout user={user} org={org} onLogout={handleLogout}>
