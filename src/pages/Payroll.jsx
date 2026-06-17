@@ -12,7 +12,7 @@ const cycle = [
   { label: 'Friday', sub: 'Payday!', payday: true },
 ]
 
-export default function Payroll() {
+export default function Payroll({ org }) {
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -22,7 +22,7 @@ export default function Payroll() {
 
   async function fetchPayroll() {
     setLoading(true)
-    const { data, error } = await supabase.from('payroll').select('*').order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('payroll').select('*').eq('org_id', org?.id).order('created_at', { ascending: false })
     if (error) console.error(error)
     setRecords(data || [])
     setLoading(false)
@@ -30,7 +30,7 @@ export default function Payroll() {
 
   async function addPayroll() {
     if (!newP.va_name) return alert('Please enter VA name')
-    const { error } = await supabase.from('payroll').insert([newP])
+    const { error } = await supabase.from('payroll').insert([{ ...newP, org_id: org?.id }])
     if (error) { alert('Error: ' + error.message) } else { setShowAdd(false); fetchPayroll() }
   }
 

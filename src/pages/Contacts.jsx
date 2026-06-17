@@ -18,7 +18,7 @@ const fields = [
   { key: 'notes', label: 'Notes' },
 ]
 
-export default function Contacts() {
+export default function Contacts({ org }) {
   const navigate = useNavigate()
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -35,14 +35,14 @@ export default function Contacts() {
 
   async function fetchContacts() {
     setLoading(true)
-    const { data } = await supabase.from('contacts').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase.from('contacts').select('*').eq('org_id', org?.id).order('created_at', { ascending: false })
     setContacts(data || [])
     setLoading(false)
   }
 
   async function addContact() {
     if (!newContact.name) return alert('Please enter a name')
-    const { error } = await supabase.from('contacts').insert([newContact])
+    const { error } = await supabase.from('contacts').insert([{ ...newContact, org_id: org?.id }])
     if (error) { alert('Error: ' + error.message) } else {
       setShowAdd(false)
       setNewContact({ name: '', company: '', country: '', city: '', email: '', phone: '', budget: '', website: '', notes: '', status: 'new', stage: 'New inquiry' })

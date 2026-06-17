@@ -3,7 +3,7 @@ import { Clock, AlertTriangle, Wallet, Check, Plus } from 'lucide-react'
 import { MetricCard, Button, PageHeader } from '../components/ui'
 import { supabase } from '../lib/supabase'
 
-export default function Timesheets() {
+export default function Timesheets({ org }) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -16,7 +16,7 @@ export default function Timesheets() {
 
   async function fetchTimesheets() {
     setLoading(true)
-    const { data, error } = await supabase.from('timesheets').select('*').order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('timesheets').select('*').eq('org_id', org?.id).order('created_at', { ascending: false })
     if (error) console.error(error)
     setRows(data || [])
     setLoading(false)
@@ -25,7 +25,7 @@ export default function Timesheets() {
   async function addTimesheet() {
     if (!newTS.va_name) return alert('Please enter VA name')
     const initials = newTS.va_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    const { error } = await supabase.from('timesheets').insert([{ ...newTS, va_initials: initials }])
+    const { error } = await supabase.from('timesheets').insert([{ ...newTS, va_initials: initials, org_id: org?.id }])
     if (error) { alert('Error: ' + error.message) } else { setShowAdd(false); fetchTimesheets() }
   }
 

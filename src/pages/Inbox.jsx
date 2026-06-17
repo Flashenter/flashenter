@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { PageHeader, Avatar } from '../components/ui'
 import { Mail, Check } from 'lucide-react'
 
-export default function Inbox() {
+export default function Inbox({ org }) {
   const [messages, setMessages] = useState([])
   const [submissions, setSubmissions] = useState([])
   const [holidays, setHolidays] = useState([])
@@ -15,9 +15,9 @@ export default function Inbox() {
   async function fetchAll() {
     setLoading(true)
     const [{ data: msgs }, { data: subs }, { data: hols }] = await Promise.all([
-      supabase.from('messages').select('*').order('created_at', { ascending: false }),
-      supabase.from('va_submissions').select('*').order('created_at', { ascending: false }),
-      supabase.from('client_holidays').select('*').order('date', { ascending: true }),
+      supabase.from('messages').select('*').eq('org_id', org?.id).order('created_at', { ascending: false }),
+      supabase.from('va_submissions').select('*').eq('org_id', org?.id).order('created_at', { ascending: false }),
+      supabase.from('client_holidays').select('*').eq('org_id', org?.id).order('date', { ascending: true }),
     ])
     setMessages(msgs || [])
     setSubmissions(subs || [])

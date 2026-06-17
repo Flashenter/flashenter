@@ -6,7 +6,7 @@ import { sendEmail } from '../lib/email'
 
 const ADMIN_EMAIL = 'info@nexbridgeva.com'
 
-export default function Invoices() {
+export default function Invoices({ org }) {
   const [invoices, setInvoices] = useState([])
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -24,8 +24,7 @@ export default function Invoices() {
   async function fetchAll() {
     setLoading(true)
     const [{ data: invs }, { data: conts }] = await Promise.all([
-      supabase.from('invoices').select('*').order('created_at', { ascending: false }),
-      supabase.from('contacts').select('*').order('name'),
+      supabase.from('invoices').select('*').eq('org_id', org?.id).order('created_at', { ascending: false }),      supabase.from('contacts').select('*').order('name'),
     ])
     setInvoices(invs || [])
     setContacts(conts || [])

@@ -3,7 +3,7 @@ import { Plus, X, Copy, Check } from 'lucide-react'
 import { MetricCard, Avatar, Button, PageHeader } from '../components/ui'
 import { supabase } from '../lib/supabase'
 
-export default function VAPool() {
+export default function VAPool({ org }) {
   const [vas, setVas] = useState([])
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
@@ -21,7 +21,7 @@ export default function VAPool() {
 
   async function fetchVAs() {
     setLoading(true)
-    const { data } = await supabase.from('vas').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase.from('vas').select('*').eq('org_id', org?.id).order('created_at', { ascending: false })
     setVas(data || [])
     setLoading(false)
   }
@@ -34,7 +34,7 @@ export default function VAPool() {
   async function addVA() {
     if (!newVA.name) return alert('Please enter a name')
     const initials = newVA.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    const { error } = await supabase.from('vas').insert([{ ...newVA, initials }])
+   const { error } = await supabase.from('vas').insert([{ ...newVA, initials, org_id: org?.id }])
     if (error) { alert('Error: ' + error.message) } else { setShowAdd(false); fetchVAs() }
   }
 
