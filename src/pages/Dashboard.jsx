@@ -4,31 +4,30 @@ import { MetricCard, Card, SectionTitle, PageHeader, Tag, Avatar, Button } from 
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-export default function Dashboard({ user }) {
+export default function Dashboard({ user, org }) {
   const navigate = useNavigate()
   const [contacts, setContacts] = useState([])
   const [reminders, setReminders] = useState([])
   const [timesheets, setTimesheets] = useState([])
 
   useEffect(() => {
-    supabase.from('contacts').select('*').order('created_at', { ascending: false }).limit(5).then(({ data }) => setContacts(data || []))
-    supabase.from('reminders').select('*').eq('done', false).limit(4).then(({ data }) => setReminders(data || []))
-    supabase.from('timesheets').select('*').eq('status', 'pending').limit(5).then(({ data }) => setTimesheets(data || []))
-  }, [])
+    if (!org?.id) return
+    supabase.from('contacts').select('*').eq('org_id', org.id).order('created_at', { ascending: false }).limit(5).then(({ data }) => setContacts(data || []))
+    supabase.from('reminders').select('*').eq('org_id', org.id).eq('done', false).limit(4).then(({ data }) => setReminders(data || []))
+    supabase.from('timesheets').select('*').eq('org_id', org.id).eq('status', 'pending').limit(5).then(({ data }) => setTimesheets(data || []))
+  }, [org?.id])
 
   const firstName = user?.name?.split(' ')[0] || 'there'
 
   const urgencyStyle = {
     overdue:  { bg: '#FCEBEB', border: '#F09595', titleColor: '#791F1F', timeColor: '#A32D2D' },
     today:    { bg: '#FEF3E2', border: '#EF9F27', titleColor: '#633806', timeColor: '#854F0B' },
-    upcoming: { bg: '#fff',    border: 'rgba(0,0,0,0.08)', titleColor: '#1a1a18', timeColor: '#888780' },
+    upcoming: { bg: '#fff', border: 'rgba(0,0,0,0.08)', titleColor: '#1a1a18', timeColor: '#888780' },
   }
 
   return (
     <div>
-      <PageHeader
-        title={'Good morning, ' + firstName}
-        subtitle="7 active markets · Payroll due Wednesday 5:00pm">
+      <PageHeader title={'Good morning, ' + firstName} subtitle="7 active markets · Payroll due Wednesday 5:00pm">
         <Button variant="primary" icon={ArrowUpRight} onClick={() => navigate('/contacts')}>New client</Button>
       </PageHeader>
 
